@@ -3,14 +3,17 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "dongjak-math-utils"
+name = "dify_sdk"
 version = "0.1.0"
-description = "一个简单的数学工具库"
+description = "Dify SDK"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "httpx>=0.28.1",
+    "pydantic>=2.10.6",
+]
 authors = [
-    {name = "AiWorld Developer", email = "dev@example.com"}
+    {name = "cruldra", email = "cruldra@gmail.com"}
 ]
 license = {text = "MIT"}
 classifiers = [
@@ -20,21 +23,23 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/yourusername/dongjak-math-utils"
-"Bug Tracker" = "https://github.com/yourusername/dongjak-math-utils/issues"
+"Homepage" = "https://github.com/cruldra/dify_sdk"
+"Bug Tracker" = "https://github.com/cruldra/dify_sdk/issues"
 
 [project.optional-dependencies]
 dev = [
     "pytest>=6.0",
+    "pytest-asyncio>=0.22.0",
+    "pytest-mock>=3.14.0",
     "ruff>=0.0.254",
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["dongjak_math_utils"]
+packages = ["dify_sdk"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "dongjak_math_utils",
+    "dify_sdk",
     "README.md",
     "LICENSE",
 ]

@@ -3,7 +3,7 @@ dongjak-math-utils 基本用法示例
 """
 
 import logging
-from dongjak_math_utils import add, subtract, multiply, divide
+from dify_sdk import add, subtract, multiply, divide
 
 # 设置日志级别
 logging.basicConfig(level=logging.DEBUG)

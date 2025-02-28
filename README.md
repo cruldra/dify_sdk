@@ -1,4 +1,4 @@
-# Simple Math Utils
+# Dify SDK
 
 一个简单的数学工具库，提供基本的数学运算功能。
 
@@ -15,7 +15,7 @@
 使用pip安装：
 
 ```bash
-pip install dongjak-math-utils
+pip install dify_sdk
 ```
 
 ## 使用方法
@@ -23,7 +23,7 @@ pip install dongjak-math-utils
 ### 基本用法
 
 ```python
-from dongjak_math_utils import add, subtract, multiply, divide
+from dify_sdk import add, subtract, multiply, divide
 
 # 基本运算
 result = add(10, 5)      # 15
@@ -52,8 +52,8 @@ result = divide(multiply(add(10, 5), subtract(8, 3)), 2)
 3. 安装开发依赖
 
 ```bash
-git clone https://github.com/yourusername/dongjak-math-utils.git
-cd dongjak-math-utils
+git clone https://github.com/yourusername/dify_sdk.git
+cd dify_sdk
 python -m venv .venv
 .venv\Scripts\activate  # Windows
 source .venv/bin/activate  # Linux/Mac
@@ -131,7 +131,7 @@ hatch publish -r test
 发布成功后，您可以通过pip安装您的包来验证：
 
 ```bash
-pip install dongjak-math-utils
+pip install dify_sdk
 ```
 
 ## 许可证
@@ -141,8 +141,8 @@ MIT
 ## 项目结构
 
 ```
-dongjak_math_utils/
-├── dongjak_math_utils/       # 主库目录
+dify_sdk/
+├── dify_sdk/       # 主库目录
 │   ├── __init__.py          # 导出公共API
 │   ├── core.py              # 核心功能
 ├── tests/                   # 测试目录
