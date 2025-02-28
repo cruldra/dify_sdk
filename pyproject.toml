@@ -1,0 +1,40 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dongjak-math-utils"
+version = "0.1.0"
+description = "一个简单的数学工具库"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+authors = [
+    {name = "AiWorld Developer", email = "dev@example.com"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/yourusername/dongjak-math-utils"
+"Bug Tracker" = "https://github.com/yourusername/dongjak-math-utils/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "ruff>=0.0.254",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["dongjak_math_utils"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "dongjak_math_utils",
+    "README.md",
+    "LICENSE",
+]

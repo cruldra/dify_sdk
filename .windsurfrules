@@ -1,0 +1,28 @@
+## 项目结构
+
+```markdown
+my_library_project/
+├── app/                      # 主应用目录
+│   ├── module1/                 # 模块1
+│   │   ├── __init__.py
+│   │   ├── schema.py         # 模型
+│   │   ├── utils.py          # 工具函数
+├── tests/                     # 测试目录
+│   ├── test_module1.py
+│   └── __init__.py
+├── docs/                      # 文档目录
+│   ├── __init__.py
+│   └── index.md              # 主页
+└── examples/                  # 示例目录
+    ├── __init__.py
+    └── example1.py           # 示例1
+```
+
+## 另请遵守
+
+1. 健壮的错误处理和日志记录，包括上下文捕获。
+2. 使用pytest进行全面测试。
+3. 使用文档字符串和README文件进行详细文档编写。
+4. 使用uv来安装依赖。
+5. 使用Ruff保持代码风格一致性。
+6. 涉及结构性变更，在README中说明。
