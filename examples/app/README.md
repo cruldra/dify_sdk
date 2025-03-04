@@ -52,6 +52,19 @@ python examples/app_list_example.py
 python examples/app/find_by_id.py
 ```
 
+### 4. 创建API密钥 (create_api_key.py)
+
+演示如何使用 `DifyApp.create_api_key()` 方法为Dify应用创建API密钥，包括：
+- 创建只读权限的API密钥
+- 创建完全访问权限的API密钥
+- 使用默认参数创建API密钥
+- 展示API密钥的详细信息（ID、名称、密钥值、权限等）
+- 错误处理示例
+
+```bash
+python examples/app/create_api_key.py
+```
+
 ## 注意事项
 
 - 这些示例使用了异步编程模式，因为Dify SDK的API是异步的

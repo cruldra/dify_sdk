@@ -165,8 +165,8 @@ class UploadFile(BaseModel):
         if self.transfer_method == TransferMethod.REMOTE_URL and not self.url:
             raise ValueError("当传递方式为remote_url时，必须提供url")
         if (
-                self.transfer_method == TransferMethod.LOCAL_FILE
-                and not self.upload_file_id
+            self.transfer_method == TransferMethod.LOCAL_FILE
+            and not self.upload_file_id
         ):
             raise ValueError("当传递方式为local_file时，必须提供upload_file_id")
         return self
@@ -619,4 +619,25 @@ class EventContainer(BaseModel):
     Attributes:
         events: 事件列表
     """
-    events: List[ConversationEvent] = Field(default_factory=list, description="事件列表")
+
+    events: List[ConversationEvent] = Field(
+        default_factory=list, description="事件列表"
+    )
+
+
+class ApiKey(BaseModel):
+    """API密钥模型
+    
+    Attributes:
+        id: API密钥ID
+        type: 密钥类型
+        token: API令牌
+        last_used_at: 最后使用时间戳
+        created_at: 创建时间戳
+    """
+
+    id: str = Field(description="API密钥ID")
+    type: str = Field(description="密钥类型")
+    token: str = Field(description="API令牌")
+    last_used_at: Optional[int] = Field(default=None, description="最后使用时间戳")
+    created_at: Optional[int] = Field(default=None, description="创建时间戳")

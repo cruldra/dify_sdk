@@ -30,6 +30,18 @@ class HttpClient:
             response.raise_for_status()
             return response.json()
 
+    async def post(
+            self, url: str, json: dict = None, params: dict = None, headers: dict = None
+    ) -> dict[str, Any]:
+        async with httpx.AsyncClient() as client:
+            merged_headers = await self.__merge_headers__(headers)
+
+            response = await client.post(
+                self.base_url + url, json=json, params=params, headers=merged_headers
+            )
+            response.raise_for_status()
+            return response.json()
+
     async def stream(
             self, url: str, params: dict = None, headers: dict = None, method: str = "POST", json: dict = None
     ) -> AsyncGenerator[bytes, None]:
