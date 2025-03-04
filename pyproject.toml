@@ -36,11 +36,11 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["dify_sdk"]
+packages = ["dify"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "dify_sdk",
+    "dify",
     "README.md",
     "LICENSE",
 ]

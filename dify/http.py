@@ -20,6 +20,7 @@ class HttpClient:
             response = await client.get(
                 self.base_url + url, params=params, headers=merged_headers
             )
+            response.raise_for_status()
             return response.json()
 
 

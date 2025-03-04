@@ -16,7 +16,7 @@ from dify.app import DifyApp
 load_dotenv()
 
 # 从环境变量获取API密钥和基础URL
-API_KEY = os.getenv("DIFY_API_KEY")
+API_KEY = os.getenv("DIFY_ADMIN_KEY")
 BASE_URL = os.getenv("DIFY_BASE_URL")
 
 
