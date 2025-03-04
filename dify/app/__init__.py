@@ -1,11 +1,12 @@
-from ..http import AdminClient
+from ..http import AdminClient, ApiClient
 from ..schemas import Pagination
 from .schemas import App
 
 
 class DifyApp:
-    def __init__(self, admin_client: AdminClient) -> None:
+    def __init__(self, admin_client: AdminClient, api_client: ApiClient) -> None:
         self.admin_client = admin_client
+        self.api_client = api_client
 
     async def find_list(
         self,
@@ -47,15 +48,42 @@ class DifyApp:
 
     async def find_by_id(self, app_id: str) -> App:
         """根据ID从Dify获取单个应用详情
-        
+
         Args:
             app_id: 应用ID
-            
+
         Returns:
             App: 应用详情对象
-            
+
         Raises:
             httpx.HTTPStatusError: 当API请求失败时抛出
         """
         response_data = await self.admin_client.get(f"/apps/{app_id}")
         return App.model_validate(response_data)
+
+    async def chat(self, app_id: str, message: str) -> str:
+        """和应用进行对话,适用`App.mode`为`chat`的应用.
+
+        Args:
+            app_id: 应用ID
+            message: 用户输入的消息
+        """
+        pass
+
+    async def completion(self, app_id: str, message: str) -> str:
+        """使用应用进行补全,适用`App.mode`为`completion`的应用.
+
+        Args:
+            app_id: 应用ID
+            message: 用户输入的消息
+        """
+        pass
+
+    async def run(self, app_id: str, message: str) -> str:
+        """使用应用运行工作流,适用`App.mode`为`workflow`的应用.
+
+        Args:
+            app_id: 应用ID
+            message: 用户输入的消息
+        """
+        pass
