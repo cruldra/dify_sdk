@@ -1,12 +1,17 @@
+import json
+from typing import AsyncGenerator
+
+import httpx
+
+from .schemas import App, ChatPayloads, ConversationEvent, ConversationEventType
+from .utils import parse_event
 from ..http import AdminClient, ApiClient
 from ..schemas import Pagination
-from .schemas import App
 
 
 class DifyApp:
-    def __init__(self, admin_client: AdminClient, api_client: ApiClient) -> None:
+    def __init__(self, admin_client: AdminClient) -> None:
         self.admin_client = admin_client
-        self.api_client = api_client
 
     async def find_list(
         self,
@@ -61,29 +66,163 @@ class DifyApp:
         response_data = await self.admin_client.get(f"/apps/{app_id}")
         return App.model_validate(response_data)
 
-    async def chat(self, app_id: str, message: str) -> str:
+    async def chat(
+        self, app_key: str, payloads: ChatPayloads
+    ) -> AsyncGenerator[ConversationEvent, None]:
         """和应用进行对话,适用`App.mode`为`chat`的应用.
 
         Args:
-            app_id: 应用ID
-            message: 用户输入的消息
-        """
-        pass
+            app_key: 应用密钥
+            payloads: 聊天请求配置
 
-    async def completion(self, app_id: str, message: str) -> str:
+        Returns:
+            AsyncGenerator[ConversationEvent, None]: 异步生成器，返回事件数据
+
+        Raises:
+            ValueError: 当请求参数无效时抛出
+            httpx.HTTPStatusError: 当API请求失败时抛出
+        """
+        if not app_key:
+            raise ValueError("应用密钥不能为空")
+        api_client = self.admin_client.create_api_client(app_key)
+        # 准备请求数据
+        request_data = payloads.model_dump()
+
+        # 设置请求头
+        headers = {
+            "Accept": "text/event-stream",
+        }
+
+        # 使用API客户端发送流式请求
+        async for chunk in api_client.stream(
+            f"/chat-messages", headers=headers, json=request_data
+        ):
+            # 解析事件数据
+            for line in chunk.decode().split("\n"):
+                if line.startswith("data:"):
+                    event_data = json.loads(line[5:])
+                    # 根据事件类型返回对应的事件对象
+                    event = parse_event(event_data)
+                    yield event
+
+    async def completion(
+        self, app_id: str, payloads: ChatPayloads
+    ) -> AsyncGenerator[ConversationEvent, None]:
         """使用应用进行补全,适用`App.mode`为`completion`的应用.
 
         Args:
             app_id: 应用ID
-            message: 用户输入的消息
-        """
-        pass
+            payloads: 聊天请求配置
 
-    async def run(self, app_id: str, message: str) -> str:
+        Returns:
+            AsyncGenerator[ConversationEvent, None]: 异步生成器，返回事件数据
+
+        Raises:
+            ValueError: 当请求参数无效时抛出
+            httpx.HTTPStatusError: 当API请求失败时抛出
+        """
+        if not app_id:
+            raise ValueError("应用ID不能为空")
+
+        if not payloads.query and not payloads.inputs:
+            raise ValueError("消息内容和inputs不能同时为空")
+
+        # 准备请求数据
+        request_data = payloads.model_dump(exclude_none=True)
+
+        # 设置请求头
+        headers = {
+            "Accept": "text/event-stream",
+        }
+
+        try:
+            # 使用API客户端发送流式请求
+            async for chunk in self.api_client.stream(
+                f"/completion-messages",
+                method="POST",
+                headers=headers,
+                json=request_data,
+            ):
+                # 解析事件数据
+                for line in chunk.decode("utf-8").split("\n"):
+                    if line.startswith("data:"):
+                        try:
+                            event_data = json.loads(line[5:])
+                            # 根据事件类型返回对应的事件对象
+                            event_type = event_data.get("event")
+                            if event_type:
+                                # 直接使用事件数据构建事件对象
+                                yield event_data
+                        except Exception as e:
+                            # 忽略无法解析的数据
+                            continue
+        except httpx.HTTPStatusError as e:
+            # 处理HTTP错误
+            error_content = await e.response.aread()
+            raise ValueError(
+                f"请求失败，状态码: {e.response.status_code}, 错误信息: {error_content.decode('utf-8')}"
+            )
+        except Exception as e:
+            # 处理其他异常
+            raise ValueError(f"发送消息时发生错误: {str(e)}")
+
+    async def run(
+        self, app_id: str, payloads: ChatPayloads
+    ) -> AsyncGenerator[ConversationEvent, None]:
         """使用应用运行工作流,适用`App.mode`为`workflow`的应用.
 
         Args:
             app_id: 应用ID
-            message: 用户输入的消息
+            payloads: 聊天请求配置
+
+        Returns:
+            AsyncGenerator[ConversationEvent, None]: 异步生成器，返回事件数据
+
+        Raises:
+            ValueError: 当请求参数无效时抛出
+            httpx.HTTPStatusError: 当API请求失败时抛出
         """
-        pass
+        if not app_id:
+            raise ValueError("应用ID不能为空")
+
+        if not payloads.query and not payloads.inputs:
+            raise ValueError("消息内容和inputs不能同时为空")
+
+        # 准备请求数据
+        request_data = payloads.model_dump(exclude_none=True)
+
+        # 设置请求头
+        headers = {
+            "Accept": "text/event-stream",
+        }
+
+        try:
+            # 使用API客户端发送流式请求
+            async for chunk in self.api_client.stream(
+                f"/workflow-executions",
+                method="POST",
+                headers=headers,
+                json=request_data,
+            ):
+                # 解析事件数据
+                for line in chunk.decode("utf-8").split("\n"):
+                    if line.startswith("data:"):
+                        try:
+                            event_data = json.loads(line[5:])
+                            # 根据事件类型返回对应的事件对象
+                            event_type = event_data.get("event")
+                            if event_type:
+                                # 直接使用事件数据构建事件对象
+                                yield event_data
+                        except Exception as e:
+                            # 忽略无法解析的数据
+                            continue
+        except httpx.HTTPStatusError as e:
+            # 处理HTTP错误
+            error_content = await e.response.aread()
+            raise ValueError(
+                f"请求失败，状态码: {e.response.status_code}, 错误信息: {error_content.decode('utf-8')}"
+            )
+        except Exception as e:
+            # 处理其他异常
+            raise ValueError(f"发送消息时发生错误: {str(e)}")

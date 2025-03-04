@@ -1,4 +1,5 @@
 from typing import Any, AsyncGenerator
+
 import httpx
 
 
@@ -11,17 +12,17 @@ class HttpClient:
             "Content-Type": "application/json",
         }
 
-    async def __merge_headers(self, headers: dict = None):
+    async def __merge_headers__(self, headers: dict = None):
         merged_headers = self.headers.copy()
         if headers:
             merged_headers.update(headers)
         return merged_headers
 
     async def get(
-        self, url: str, params: dict = None, headers: dict = None
+            self, url: str, params: dict = None, headers: dict = None
     ) -> dict[str, Any]:
         async with httpx.AsyncClient() as client:
-            merged_headers = await self.__merge_headers(headers)
+            merged_headers = await self.__merge_headers__(headers)
 
             response = await client.get(
                 self.base_url + url, params=params, headers=merged_headers
@@ -30,13 +31,13 @@ class HttpClient:
             return response.json()
 
     async def stream(
-        self, url: str, params: dict = None, headers: dict = None, method: str = "POST"
+            self, url: str, params: dict = None, headers: dict = None, method: str = "POST", json: dict = None
     ) -> AsyncGenerator[bytes, None]:
         async with httpx.AsyncClient() as client:
-            merged_headers = await self.__merge_headers(headers)
+            merged_headers = await self.__merge_headers__(headers)
 
             async with client.stream(
-                method, self.base_url + url, params=params, headers=merged_headers
+                    method, self.base_url + url, params=params, headers=merged_headers, json=json
             ) as response:
                 response.raise_for_status()
                 async for chunk in response.aiter_bytes():
@@ -46,6 +47,9 @@ class HttpClient:
 class AdminClient(HttpClient):
     def __init__(self, base_url: str, key: str):
         super().__init__(base_url + "/console/api", key)
+
+    def create_api_client(self, app_key: str):
+        return ApiClient(self.base_url + "/v1", app_key)
 
 
 class ApiClient(HttpClient):

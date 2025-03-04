@@ -7,9 +7,10 @@ Dify SDK - Dify AI 平台的 Python SDK
 from .app import DifyApp
 from .http import AdminClient, ApiClient
 
+
 class Dify(object):
-    def __init__(self, admin_client: AdminClient, api_client: ApiClient):
-        self.app = DifyApp(admin_client, api_client)
+    def __init__(self, admin_client: AdminClient):
+        self.app = DifyApp(admin_client)
 
 
 __version__ = "0.1.0"
