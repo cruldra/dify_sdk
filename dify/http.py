@@ -58,10 +58,11 @@ class HttpClient:
 
 class AdminClient(HttpClient):
     def __init__(self, base_url: str, key: str):
+        self.host_url = base_url
         super().__init__(base_url + "/console/api", key)
 
     def create_api_client(self, app_key: str):
-        return ApiClient(self.base_url + "/v1", app_key)
+        return ApiClient(self.host_url, app_key)
 
 
 class ApiClient(HttpClient):
