@@ -14,12 +14,12 @@ class DifyApp:
         self.admin_client = admin_client
 
     async def find_list(
-            self,
-            page: int = 1,
-            limit: int = 100,
-            mode: str = None,
-            name: str = "",
-            is_created_by_me: bool = False,
+        self,
+        page: int = 1,
+        limit: int = 100,
+        mode: str = None,
+        name: str = "",
+        is_created_by_me: bool = False,
     ):
         """从 Dify 分页获取应用列表
 
@@ -66,6 +66,27 @@ class DifyApp:
         response_data = await self.admin_client.get(f"/apps/{app_id}")
         return App.model_validate(response_data)
 
+    async def get_keys(self, app_id: str) -> list[ApiKey]:
+        """获取应用的API密钥列表
+
+        Args:
+            app_id: 应用ID
+
+        Returns:
+            list[ApiKey]: API密钥列表，包含每个密钥的详细信息
+
+        Raises:
+            httpx.HTTPStatusError: 当API请求失败时抛出
+            ValueError: 当应用ID为空时抛出
+        """
+        if not app_id:
+            raise ValueError("应用ID不能为空")
+
+        response_data = await self.admin_client.get(f"/apps/{app_id}/api-keys")
+        # 确保返回的数据是列表格式
+        api_keys_data = response_data.get("data", []) if isinstance(response_data, dict) else response_data
+        return [ApiKey.model_validate(key) for key in api_keys_data]
+
     async def create_api_key(self, app_id: str) -> ApiKey:
         """创建API密钥
 
@@ -83,13 +104,11 @@ class DifyApp:
         Raises:
             httpx.HTTPStatusError: 当API请求失败时抛出
         """
-        response_data = await self.admin_client.post(
-            f"/apps/{app_id}/api-keys"
-        )
+        response_data = await self.admin_client.post(f"/apps/{app_id}/api-keys")
         return ApiKey.model_validate(response_data)
 
     async def chat(
-            self, app_key: str, payloads: ChatPayloads
+        self, app_key: str, payloads: ChatPayloads
     ) -> AsyncGenerator[ConversationEvent, None]:
         """和应用进行对话,适用`App.mode`为`chat`的应用.
 
@@ -117,7 +136,7 @@ class DifyApp:
 
         # 使用API客户端发送流式请求
         async for chunk in api_client.stream(
-                f"/chat-messages", headers=headers, json=request_data
+            f"/chat-messages", headers=headers, json=request_data
         ):
             # 解析事件数据
             for line in chunk.decode().split("\n"):
@@ -128,7 +147,7 @@ class DifyApp:
                     yield event
 
     async def completion(
-            self, app_id: str, payloads: ChatPayloads
+        self, app_id: str, payloads: ChatPayloads
     ) -> AsyncGenerator[ConversationEvent, None]:
         """使用应用进行补全,适用`App.mode`为`completion`的应用.
 
@@ -160,10 +179,10 @@ class DifyApp:
         try:
             # 使用API客户端发送流式请求
             async for chunk in self.api_client.stream(
-                    f"/completion-messages",
-                    method="POST",
-                    headers=headers,
-                    json=request_data,
+                f"/completion-messages",
+                method="POST",
+                headers=headers,
+                json=request_data,
             ):
                 # 解析事件数据
                 for line in chunk.decode("utf-8").split("\n"):
@@ -189,7 +208,7 @@ class DifyApp:
             raise ValueError(f"发送消息时发生错误: {str(e)}")
 
     async def run(
-            self, app_id: str, payloads: ChatPayloads
+        self, app_id: str, payloads: ChatPayloads
     ) -> AsyncGenerator[ConversationEvent, None]:
         """使用应用运行工作流,适用`App.mode`为`workflow`的应用.
 
@@ -221,10 +240,10 @@ class DifyApp:
         try:
             # 使用API客户端发送流式请求
             async for chunk in self.api_client.stream(
-                    f"/workflow-executions",
-                    method="POST",
-                    headers=headers,
-                    json=request_data,
+                f"/workflow-executions",
+                method="POST",
+                headers=headers,
+                json=request_data,
             ):
                 # 解析事件数据
                 for line in chunk.decode("utf-8").split("\n"):

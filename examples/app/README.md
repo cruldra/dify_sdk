@@ -65,6 +65,18 @@ python examples/app/find_by_id.py
 python examples/app/create_api_key.py
 ```
 
+### 5. 获取API密钥列表 (get_keys.py)
+
+演示如何使用 `DifyApp.get_keys()` 方法获取Dify应用的API密钥列表，包括：
+- 获取并展示应用的所有API密钥
+- 创建新的API密钥并验证添加成功
+- 展示API密钥的详细信息（ID、类型、创建时间等）
+- 错误处理示例
+
+```bash
+python examples/app/get_keys.py
+```
+
 ## 注意事项
 
 - 这些示例使用了异步编程模式，因为Dify SDK的API是异步的
