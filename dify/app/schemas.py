@@ -140,17 +140,35 @@ class TransferMethod(str, Enum):
     LOCAL_FILE = "local_file"
 
 
+class FileType(str, Enum):
+    """文件类型枚举
+
+    Attributes:
+        DOCUMENT: 文档类型,具体类型包含：'TXT', 'MD', 'MARKDOWN', 'PDF', 'HTML', 'XLSX', 'XLS', 'DOCX', 'CSV', 'EML', 'MSG', 'PPTX', 'PPT', 'XML', 'EPUB'
+        IMAGE: 图片类型,具体类型包含：'JPG', 'JPEG', 'PNG', 'GIF', 'WEBP', 'SVG'
+        AUDIO: 音频类型,具体类型包含：'MP3', 'M4A', 'WAV', 'WEBM', 'AMR'
+        VIDEO: 视频类型,具体类型包含：'MP4', 'MOV', 'MPEG', 'MPGA'
+        CUSTOM: 自定义类型
+    """
+
+    DOCUMENT = "document"
+    IMAGE = "image"
+    AUDIO = "audio"
+    VIDEO = "video"
+    CUSTOM = "custom"
+
+
 class UploadFile(BaseModel):
     """用户上传的文件对象
 
     Attributes:
-        type: 文件类型，目前仅支持图片格式
+        type: 文件类型，`chat`模式仅支持图片格式
         transfer_method: 文件传递方式
         url: 图片地址（仅当传递方式为remote_url时）
         upload_file_id: 上传文件ID（仅当传递方式为local_file时）
     """
 
-    type: str = Field(default="image", description="文件类型，目前仅支持图片格式")
+    type: FileType = Field(default=FileType.IMAGE, description="文件类型")
     transfer_method: TransferMethod = Field(description="文件传递方式")
     url: Optional[str] = Field(
         default=None, description="图片地址，仅当传递方式为remote_url时有效"
@@ -165,8 +183,8 @@ class UploadFile(BaseModel):
         if self.transfer_method == TransferMethod.REMOTE_URL and not self.url:
             raise ValueError("当传递方式为remote_url时，必须提供url")
         if (
-            self.transfer_method == TransferMethod.LOCAL_FILE
-            and not self.upload_file_id
+                self.transfer_method == TransferMethod.LOCAL_FILE
+                and not self.upload_file_id
         ):
             raise ValueError("当传递方式为local_file时，必须提供upload_file_id")
         return self
@@ -202,6 +220,31 @@ class ChatPayloads(BaseModel):
         default_factory=list, description="上传的文件列表"
     )
     auto_generate_name: Optional[bool] = Field(default=True, description="自动生成标题")
+    # Pydantic V2 配置方式
+    model_config = {
+        "populate_by_name": True,
+        "protected_namespaces": (),  # 可选，解决 Pydantic 保留名称冲突
+    }
+
+
+class RunWorkflowPayloads(BaseModel):
+    """运行工作流请求配置
+
+    Attributes:
+        inputs (dict): 允许传入 App 定义的各变量值。inputs 参数包含了多组键值对（Key/Value pairs），每组的键对应一个特定变量，每组的值则是该变量的具体值。默认 {}
+        response_mode (str): 响应模式。streaming 流式模式（推荐）。基于 SSE（Server-Sent Events）实现类似打字机输出方式的流式返回。blocking 阻塞模式，等待执行完毕后返回结果。（请求若流程较长可能会被中断）。由于 Cloudflare 限制，请求会在 100 秒超时无返回后中断。注：Agent模式下不允许blocking
+        user (str): 用户标识，用于定义终端用户的身份，方便检索、统计。由开发者定义规则，需保证用户标识在应用内唯一
+        files (list[UploadFile]): 上传的文件。
+    """
+
+    inputs: Optional[dict] = Field(
+        default_factory=dict, description="额外的输入参数配置"
+    )
+    response_mode: Optional[str] = Field(default="streaming", description="响应模式")
+    user: Optional[str] = Field(default=None, description="用户标识")
+    files: Optional[List[UploadFile]] = Field(
+        default_factory=list, description="上传的文件列表"
+    )
     # Pydantic V2 配置方式
     model_config = {
         "populate_by_name": True,
@@ -627,7 +670,7 @@ class EventContainer(BaseModel):
 
 class ApiKey(BaseModel):
     """API密钥模型
-    
+
     Attributes:
         id: API密钥ID
         type: 密钥类型
