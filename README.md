@@ -1,6 +1,6 @@
 # Dify SDK
 
-一个简单的数学工具库，提供基本的数学运算功能。
+一个简单的数学工具库，提供基本的数学运算功能。同时支持Dify API的事件处理功能。
 
 ## 功能特点
 
@@ -9,6 +9,7 @@
 - 详细的文档和示例
 - 完整的测试覆盖
 - 健壮的错误处理和日志记录
+- **新增：** 支持Dify API的事件处理，包括聊天消息、Agent消息等多种事件类型
 
 ## 安装
 
@@ -41,6 +42,31 @@ result = add(3.14, 2.71)  # 5.85
 # 链式操作
 result = divide(multiply(add(10, 5), subtract(8, 3)), 2)
 # 等同于 ((10 + 5) * (8 - 3)) / 2 = 37.5
+```
+
+### 事件处理
+
+```python
+from dify.app.event_schemas import ConversationEvent, parse_event
+from dify.app.schemas import ConversationEventType
+
+# 解析事件
+json_data = {
+    "event": "message",
+    "message_id": "msg_123",
+    "conversation_id": "conv_456",
+    "answer": "这是一个消息回复",
+    "created_at": 1646035200
+}
+
+# 自动解析为对应的事件类型
+event = parse_event(json_data)
+
+# 根据事件类型处理
+if event.event == ConversationEventType.MESSAGE:
+    print(f"收到消息: {event.answer}")
+elif event.event == ConversationEventType.ERROR:
+    print(f"发生错误: {event.message}")
 ```
 
 ## 开发
@@ -142,10 +168,25 @@ MIT
 
 ```
 dify_sdk/
-├── dify_sdk/       # 主库目录
+├── dify/                    # 主库目录
 │   ├── __init__.py          # 导出公共API
-│   ├── core.py              # 核心功能
+│   ├── app/                 # 应用相关功能
+│   │   ├── __init__.py
+│   │   ├── schemas.py       # 数据模型定义
+│   │   ├── event_schemas.py # 事件模型定义
 ├── tests/                   # 测试目录
-│   └── test_core.py         # 核心功能测试
+│   ├── test_core.py         # 核心功能测试
+│   └── test_event_schemas.py # 事件模型测试
 └── examples/                # 示例目录
-    └── basic_usage.py       # 基本用法示例
+    ├── basic_usage.py       # 基本用法示例
+    └── event_example.py     # 事件处理示例
+```
+
+## 最近更新
+
+### 1.1.0 (2023-03-04)
+
+- 新增：支持Dify API的事件处理功能
+  - 添加了`ConversationEvent`联合类型，支持多种事件类型的处理
+  - 提供了`parse_event`函数，用于根据事件类型自动解析事件对象
+  - 添加了事件处理示例和测试用例

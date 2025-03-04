@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Literal, Optional, List
+from typing import Literal, Optional, List, Annotated, Union
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -165,8 +165,8 @@ class UploadFile(BaseModel):
         if self.transfer_method == TransferMethod.REMOTE_URL and not self.url:
             raise ValueError("当传递方式为remote_url时，必须提供url")
         if (
-            self.transfer_method == TransferMethod.LOCAL_FILE
-            and not self.upload_file_id
+                self.transfer_method == TransferMethod.LOCAL_FILE
+                and not self.upload_file_id
         ):
             raise ValueError("当传递方式为local_file时，必须提供upload_file_id")
         return self
@@ -592,3 +592,31 @@ class TTSMessageEvent(BaseModel):
         "populate_by_name": True,
         "protected_namespaces": (),
     }
+
+
+# 创建联合类型
+ConversationEvent = Annotated[
+    Union[
+        ChatMessageEvent,
+        AgentMessageEvent,
+        AgentThoughtEvent,
+        MessageFileEvent,
+        MessageEndEvent,
+        TTSMessageEvent,
+        TTSMessageEndEvent,
+        MessageReplaceEvent,
+        ErrorEvent,
+    ],
+    Field(discriminator="event"),
+]
+
+
+# 示例用法
+class EventContainer(BaseModel):
+    """
+    事件容器，用于处理多种类型的事件
+
+    Attributes:
+        events: 事件列表
+    """
+    events: List[ConversationEvent] = Field(default_factory=list, description="事件列表")
