@@ -94,26 +94,48 @@ class DifyApp:
             app_id: 应用ID
 
         Returns:
-            ApiKey: API密钥对象，包含以下属性：
-                - id: API密钥ID
-                - type: 密钥类型
-                - token: API令牌
-                - last_used_at: 最后使用时间戳（可能为None）
-                - created_at: 创建时间戳
+            ApiKey: 创建的API密钥对象
 
         Raises:
             httpx.HTTPStatusError: 当API请求失败时抛出
+            ValueError: 当应用ID为空时抛出
         """
+        if not app_id:
+            raise ValueError("应用ID不能为空")
+
         response_data = await self.admin_client.post(f"/apps/{app_id}/api-keys")
         return ApiKey.model_validate(response_data)
 
+    async def delete_api_key(self, app_id: str, key_id: str) -> bool:
+        """删除API密钥
+
+        Args:
+            app_id: 应用ID
+            key_id: API密钥ID
+
+        Returns:
+            bool: 删除是否成功
+
+        Raises:
+            httpx.HTTPStatusError: 当API请求失败时抛出
+            ValueError: 当应用ID或密钥ID为空时抛出
+        """
+        if not app_id:
+            raise ValueError("应用ID不能为空")
+        
+        if not key_id:
+            raise ValueError("API密钥ID不能为空")
+
+        await self.admin_client.delete(f"/apps/{app_id}/api-keys/{key_id}")
+        return True
+
     async def chat(
-        self, app_key: str, payloads: ChatPayloads
+        self,  key: ApiKey, payloads: ChatPayloads
     ) -> AsyncGenerator[ConversationEvent, None]:
         """和应用进行对话,适用`App.mode`为`chat`的应用.
 
         Args:
-            app_key: 应用密钥
+            key: 应用密钥
             payloads: 聊天请求配置
 
         Returns:
@@ -123,9 +145,9 @@ class DifyApp:
             ValueError: 当请求参数无效时抛出
             httpx.HTTPStatusError: 当API请求失败时抛出
         """
-        if not app_key:
+        if not key:
             raise ValueError("应用密钥不能为空")
-        api_client = self.admin_client.create_api_client(app_key)
+        api_client = self.admin_client.create_api_client(key.token)
         # 准备请求数据
         request_data = payloads.model_dump()
 

@@ -72,25 +72,6 @@ async def main():
                 
     except Exception as e:
         print(f"获取API密钥列表失败: {e}")
-    
-    # 创建新的API密钥示例
-    print("\n创建新的API密钥:")
-    try:
-        new_key = await dify_app.create_api_key(APP_ID)
-        print("  新API密钥创建成功:")
-        print(f"  ID: {new_key.id}")
-        print(f"  类型: {new_key.type}")
-        print(f"  令牌: {new_key.token}")
-        print(f"  创建时间: {new_key.created_at}")
-        print("\n  注意: 请妥善保存上述API密钥，它只会显示一次！")
-        
-        # 再次获取API密钥列表，验证新密钥已添加
-        print("\n再次获取API密钥列表，验证新密钥已添加:")
-        updated_keys = await dify_app.get_keys(APP_ID)
-        print(f"  现在共有 {len(updated_keys)} 个API密钥")
-        
-    except Exception as e:
-        print(f"创建新API密钥失败: {e}")
 
 
 if __name__ == "__main__":

@@ -42,6 +42,17 @@ class HttpClient:
             response.raise_for_status()
             return response.json()
 
+    async def delete(
+            self, url: str, params: dict = None, headers: dict = None
+    ) :
+        async with httpx.AsyncClient() as client:
+            merged_headers = await self.__merge_headers__(headers)
+
+            response = await client.delete(
+                self.base_url + url, params=params, headers=merged_headers
+            )
+            response.raise_for_status()
+
     async def stream(
             self, url: str, params: dict = None, headers: dict = None, method: str = "POST", json: dict = None
     ) -> AsyncGenerator[bytes, None]:

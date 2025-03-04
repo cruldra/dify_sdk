@@ -60,8 +60,8 @@ async def main():
     print("\n开始聊天...")
     answer_text = ""
     conversation_id = None
-    app_key = await dify_app.create_api_key(app.id)
-    async for event in dify_app.chat(app_key.token, payloads):
+    app_key = (await dify_app.get_keys(app.id))[0]
+    async for event in dify_app.chat(app_key, payloads):
         print("事件类型:", event.event)
         if isinstance(event, ChatMessageEvent):
             print(f"ai响应: {event.answer}", end="", flush=True)

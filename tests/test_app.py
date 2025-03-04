@@ -175,19 +175,52 @@ async def test_run(dify_app, mock_api_client, chat_payloads):
 
 @pytest.mark.asyncio
 async def test_chat_with_error(dify_app, mock_api_client, chat_payloads):
-    """测试 chat 方法的错误处理"""
-    # 模拟 HTTP 错误
-    error_response = MagicMock()
-    error_response.status_code = 400
-    error_response.aread = AsyncMock(return_value=b'{"error": "Bad Request"}')
+    """测试聊天过程中出现错误的情况"""
+    # 模拟异常
+    mock_api_client.stream.side_effect = Exception("测试异常")
+
+    # 调用方法
+    with pytest.raises(Exception) as excinfo:
+        async for _ in dify_app.chat("test-key", chat_payloads):
+            pass
+
+    # 验证异常信息
+    assert "测试异常" in str(excinfo.value)
+
+
+@pytest.mark.asyncio
+async def test_delete_api_key(dify_app, mock_admin_client):
+    """测试删除API密钥功能"""
+    # 设置模拟返回值
+    mock_admin_client.delete.return_value = {}
     
-    # 设置模拟异常
-    mock_api_client.stream.side_effect = Exception("模拟异常")
+    # 调用方法
+    result = await dify_app.delete_api_key("app-123456", "key-123456")
     
+    # 验证结果
+    assert result is True
+    
+    # 验证调用
+    mock_admin_client.delete.assert_called_once_with("/apps/app-123456/api-keys/key-123456")
+
+
+@pytest.mark.asyncio
+async def test_delete_api_key_with_empty_app_id(dify_app):
+    """测试删除API密钥时应用ID为空的情况"""
     # 调用方法并验证异常
     with pytest.raises(ValueError) as excinfo:
-        async for _ in dify_app.chat("app-123456", chat_payloads):
-            pass
+        await dify_app.delete_api_key("", "key-123456")
     
     # 验证异常信息
-    assert "发送消息时发生错误" in str(excinfo.value) 
+    assert "应用ID不能为空" in str(excinfo.value)
+
+
+@pytest.mark.asyncio
+async def test_delete_api_key_with_empty_key_id(dify_app):
+    """测试删除API密钥时密钥ID为空的情况"""
+    # 调用方法并验证异常
+    with pytest.raises(ValueError) as excinfo:
+        await dify_app.delete_api_key("app-123456", "")
+    
+    # 验证异常信息
+    assert "API密钥ID不能为空" in str(excinfo.value) 

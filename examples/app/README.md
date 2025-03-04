@@ -77,6 +77,18 @@ python examples/app/create_api_key.py
 python examples/app/get_keys.py
 ```
 
+### 6. 删除API密钥 (delete_api_key.py)
+
+演示如何使用 `DifyApp.delete_api_key()` 方法删除Dify应用的API密钥，包括：
+- 获取并展示应用的当前API密钥列表
+- 删除指定的API密钥
+- 验证删除操作是否成功
+- 错误处理示例
+
+```bash
+python examples/app/delete_api_key.py
+```
+
 ## 注意事项
 
 - 这些示例使用了异步编程模式，因为Dify SDK的API是异步的
