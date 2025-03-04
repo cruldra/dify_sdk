@@ -8,8 +8,8 @@ import httpx
 import pytest_asyncio
 from unittest.mock import MagicMock, AsyncMock
 
-from dify_sdk.services import AppService, DifyClient, DifyAPIException
-from dify_sdk.schemas import App, Pagination, DifyAppMode
+from dify.services import AppService, DifyClient, DifyAPIException
+from dify.app.schemas import App, Pagination, DifyAppMode
 
 if TYPE_CHECKING:
     from _pytest.monkeypatch import MonkeyPatch

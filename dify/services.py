@@ -1,7 +1,10 @@
-from typing import List, Optional
-from .schemas import App, Pagination, DifyAppMode
 import logging
+from typing import Optional
+
 import httpx
+
+from .app.schemas import App, DifyAppMode
+from .schemas import Pagination
 
 # 创建日志记录器
 logger = logging.getLogger("dify_sdk")
@@ -23,7 +26,7 @@ class DifyAPIException(Exception):
 
 class DifyClient:
     def __init__(
-        self, base_url: str = None, app_key: str = None, admin_key: str = None
+            self, base_url: str = None, app_key: str = None, admin_key: str = None
     ):
         self.base_url = base_url or "https://api.dify.ai"
         self.app_key = app_key
@@ -37,12 +40,12 @@ class AppService:
     async def get_app(self, app_id: str) -> App:
         pass
 
-    async def get_apps(self, 
-                page: int = 1, 
-                limit: int = 100, 
-                mode: Optional[DifyAppMode] = None,
-                name: str = "",
-                is_created_by_me: bool = False) -> Pagination[App]:
+    async def get_apps(self,
+                       page: int = 1,
+                       limit: int = 100,
+                       mode: Optional[DifyAppMode] = None,
+                       name: str = "",
+                       is_created_by_me: bool = False) -> Pagination[App]:
         """从 Dify 分页获取应用列表
         
         Args:
@@ -69,10 +72,10 @@ class AppService:
             "name": name,
             "is_created_by_me": is_created_by_me,
         }
-        
+
         if mode:
             params["mode"] = mode.value
-            
+
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get(
@@ -80,26 +83,26 @@ class AppService:
                     params=params,
                     headers=headers,
                 )
-                
+
                 response.raise_for_status()
-                
+
                 return Pagination[App].model_validate(response.json())
-            
+
         except httpx.HTTPStatusError as e:
             status_code = e.response.status_code
             error_text = e.response.text
-            
+
             logger.error(f"查询Dify应用列表失败")
             logger.error(f"错误码: {status_code}")
             logger.error(f"错误信息: {error_text}")
-            
+
             raise DifyAPIException(
                 status_code=status_code,
                 detail=f"Failed to fetch apps from Dify: {error_text}"
             )
         except httpx.RequestError as e:
             logger.error(f"查询Dify应用列表请求异常: {str(e)}")
-            
+
             raise DifyAPIException(
                 status_code=500,
                 detail=f"Request error when fetching apps from Dify: {str(e)}"
