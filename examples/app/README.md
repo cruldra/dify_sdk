@@ -39,6 +39,19 @@ python examples/find_list_example.py
 python examples/app_list_example.py
 ```
 
+### 3. 获取单个应用详情 (find_by_id.py)
+
+演示如何使用 `DifyApp.find_by_id()` 方法获取单个Dify应用的详细信息，包括：
+- 获取有效应用的详细信息
+- 展示应用的基本属性（名称、描述、模式等）
+- 展示应用的配置信息
+- 展示应用的标签信息
+- 错误处理示例（尝试获取不存在的应用）
+
+```bash
+python examples/app/find_by_id.py
+```
+
 ## 注意事项
 
 - 这些示例使用了异步编程模式，因为Dify SDK的API是异步的

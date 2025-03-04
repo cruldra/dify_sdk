@@ -45,5 +45,17 @@ class DifyApp:
 
         return Pagination[App].model_validate(response_data)
 
-    def find_by_id(self):
-        pass
+    async def find_by_id(self, app_id: str) -> App:
+        """根据ID从Dify获取单个应用详情
+        
+        Args:
+            app_id: 应用ID
+            
+        Returns:
+            App: 应用详情对象
+            
+        Raises:
+            httpx.HTTPStatusError: 当API请求失败时抛出
+        """
+        response_data = await self.admin_client.get(f"/apps/{app_id}")
+        return App.model_validate(response_data)
