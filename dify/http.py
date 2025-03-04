@@ -1,3 +1,4 @@
+from typing import Any, AsyncGenerator
 import httpx
 
 
@@ -10,18 +11,36 @@ class HttpClient:
             "Content-Type": "application/json",
         }
 
+    async def __merge_headers(self, headers: dict = None):
+        merged_headers = self.headers.copy()
+        if headers:
+            merged_headers.update(headers)
+        return merged_headers
 
-    async def get(self, url: str, params: dict = None, headers: dict = None):
+    async def get(
+        self, url: str, params: dict = None, headers: dict = None
+    ) -> dict[str, Any]:
         async with httpx.AsyncClient() as client:
-            merged_headers = self.headers.copy()
-            if headers:
-                merged_headers.update(headers)
-                
+            merged_headers = await self.__merge_headers(headers)
+
             response = await client.get(
                 self.base_url + url, params=params, headers=merged_headers
             )
             response.raise_for_status()
             return response.json()
+
+    async def stream(
+        self, url: str, params: dict = None, headers: dict = None, method: str = "POST"
+    ) -> AsyncGenerator[bytes, None]:
+        async with httpx.AsyncClient() as client:
+            merged_headers = await self.__merge_headers(headers)
+
+            async with client.stream(
+                method, self.base_url + url, params=params, headers=merged_headers
+            ) as response:
+                response.raise_for_status()
+                async for chunk in response.aiter_bytes():
+                    yield chunk
 
 
 class AdminClient(HttpClient):
@@ -31,4 +50,4 @@ class AdminClient(HttpClient):
 
 class ApiClient(HttpClient):
     def __init__(self, base_url: str, key: str):
-        super().__init__(base_url+"/v1", key)
+        super().__init__(base_url + "/v1", key)
