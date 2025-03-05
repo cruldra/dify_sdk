@@ -7,26 +7,27 @@ from .schemas import (
     ChatPayloads,
     ConversationEvent,
     ConversationEventType,
-    RunWorkflowPayloads, AppMode,
-    ConversationList,
-    ConversationListQueryPayloads,
+    RunWorkflowPayloads,
+    AppMode,
 )
 from .utils import parse_event
 from ..http import AdminClient
 from ..schemas import Pagination
+from .conversation import DifyConversation
 
 
 class DifyApp:
     def __init__(self, admin_client: AdminClient) -> None:
         self.admin_client = admin_client
+        self.conversation = DifyConversation(admin_client)
 
     async def find_list(
-            self,
-            page: int = 1,
-            limit: int = 100,
-            mode: AppMode = None,
-            name: str = "",
-            is_created_by_me: bool = False,
+        self,
+        page: int = 1,
+        limit: int = 100,
+        mode: AppMode = None,
+        name: str = "",
+        is_created_by_me: bool = False,
     ):
         """从 Dify 分页获取应用列表
 
@@ -141,7 +142,7 @@ class DifyApp:
         return True
 
     async def chat(
-            self, key: ApiKey, payloads: ChatPayloads
+        self, key: ApiKey, payloads: ChatPayloads
     ) -> AsyncGenerator[ConversationEvent, None]:
         """和应用进行对话,适用`App.mode`为`chat`的应用.
 
@@ -169,7 +170,7 @@ class DifyApp:
 
         # 使用API客户端发送流式请求
         async for chunk in api_client.stream(
-                f"/chat-messages", headers=headers, json=request_data
+            f"/chat-messages", headers=headers, json=request_data
         ):
             # 解析事件数据
             for line in chunk.decode().split("\n"):
@@ -180,7 +181,7 @@ class DifyApp:
                     yield event
 
     async def completion(
-            self, api_key: ApiKey, payloads: RunWorkflowPayloads
+        self, api_key: ApiKey, payloads: RunWorkflowPayloads
     ) -> AsyncGenerator[ConversationEvent, None]:
         """使用应用进行补全,适用`App.mode`为`completion`的应用.
 
@@ -211,10 +212,10 @@ class DifyApp:
 
         # 使用API客户端发送流式请求
         async for chunk in api_client.stream(
-                "/completion-messages",
-                method="POST",
-                headers=headers,
-                json=request_data,
+            "/completion-messages",
+            method="POST",
+            headers=headers,
+            json=request_data,
         ):
             # 解析事件数据
             for line in chunk.decode("utf-8").split("\n"):
@@ -225,7 +226,7 @@ class DifyApp:
                     yield event
 
     async def run(
-            self, api_key: ApiKey, payloads: RunWorkflowPayloads
+        self, api_key: ApiKey, payloads: RunWorkflowPayloads
     ) -> AsyncGenerator[ConversationEvent, None]:
         """使用应用运行工作流,适用`App.mode`为`workflow`的应用.
 
@@ -256,9 +257,9 @@ class DifyApp:
 
         # 使用API客户端发送流式请求
         async for chunk in api_client.stream(
-                "/workflows/run",
-                json=request_data,
-                headers=headers,
+            "/workflows/run",
+            json=request_data,
+            headers=headers,
         ):
             # 解析事件数据
             for line in chunk.decode().split("\n"):
@@ -267,35 +268,3 @@ class DifyApp:
                     # 根据事件类型返回对应的事件对象
                     event = parse_event(event_data)
                     yield event
-
-    async def get_conversations(
-        self, api_key: ApiKey, payloads: ConversationListQueryPayloads
-    ) -> ConversationList:
-        """获取对话列表
-
-        Args:
-            api_key: API密钥
-            payloads: 查询参数配置
-
-        Returns:
-            ConversationList: 对话列表对象
-
-        Raises:
-            ValueError: 当API密钥为空时抛出
-            httpx.HTTPStatusError: 当API请求失败时抛出
-        """
-        if not api_key:
-            raise ValueError("API密钥不能为空")
-
-        api_client = self.admin_client.create_api_client(api_key.token)
-
-        # 准备请求参数
-        params = payloads.model_dump(exclude_none=True)
-
-        # 发送请求获取对话列表
-        response_data = await api_client.get(
-            "/conversations",
-            params=params,
-        )
-
-        return ConversationList.model_validate(response_data)

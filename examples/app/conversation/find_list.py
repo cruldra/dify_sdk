@@ -14,7 +14,8 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 from dify.app import DifyApp
-from dify.app.schemas import ConversationListQueryPayloads, SortBy
+from dify.app.conversation import ConversationListQueryPayloads
+from dify.app.conversation.schemas import SortBy
 from dify.http import AdminClient
 
 # 加载环境变量
@@ -61,7 +62,7 @@ async def main():
     # 获取对话列表
     print(f"\n获取用户 {user_id} 的对话列表...")
     try:
-        conversations = await dify_app.get_conversations(api_key, payloads)
+        conversations = await dify_app.conversation.get_conversations(api_key, payloads)
         
         # 打印对话列表信息
         print(f"共获取到 {len(conversations.data)} 条对话记录")
