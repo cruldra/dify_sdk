@@ -52,6 +52,7 @@ asyncio.run(main())
 - `completion(api_key, payloads)`: 使用应用进行补全
 - `run(api_key, payloads)`: 运行工作流
 - `fetch_conversations(api_key, payloads)`: 获取对话列表
+- `get_messages(api_key, payloads)`: 获取消息列表
 
 ## 获取对话列表
 
@@ -138,3 +139,93 @@ async def get_conversations():
 - `introduction`: 开场白
 - `created_at`: 创建时间戳
 - `updated_at`: 更新时间戳
+
+## 获取消息列表
+
+使用 `get_messages` 方法可以获取特定对话的消息列表：
+
+```python
+from dify import Dify
+from dify.app.conversation.schemas import MessageListQueryPayloads
+from dify.schemas import ApiKey
+
+async def get_messages():
+    # 初始化客户端
+    dify = Dify(base_url="https://api.dify.ai")
+    
+    # 创建API密钥对象
+    api_key = ApiKey(token="your_api_key")
+    
+    # 创建查询参数
+    query_params = MessageListQueryPayloads(
+        conversation_id="conversation_id",  # 对话ID
+        user="user_id",                     # 用户ID
+        first_id=None,                      # 当前页第一条聊天记录的ID，用于分页
+        limit=20                            # 返回消息数量
+    )
+    
+    # 获取消息列表
+    message_list = await dify.conversation.get_messages(
+        api_key=api_key,
+        payloads=query_params
+    )
+    
+    # 处理结果
+    print(f"获取到 {len(message_list.data)} 条消息")
+    print(f"是否有更多消息: {message_list.has_more}")
+    
+    # 遍历消息
+    for message in message_list.data:
+        print(f"消息ID: {message.id}")
+        print(f"用户问题: {message.query}")
+        print(f"AI回答: {message.answer}")
+        print(f"创建时间: {message.created_time}")
+        
+    # 分页获取更多消息
+    if message_list.has_more and message_list.data:
+        # 使用最后一条消息的ID作为下一页的first_id
+        last_message_id = message_list.data[-1].id
+        
+        # 创建新的查询参数
+        next_page_params = MessageListQueryPayloads(
+            conversation_id="conversation_id",
+            user="user_id",
+            first_id=last_message_id,
+            limit=20
+        )
+        
+        # 获取下一页消息
+        next_page = await dify.conversation.get_messages(
+            api_key=api_key,
+            payloads=next_page_params
+        )
+```
+
+### 参数说明
+
+`get_messages` 方法接受以下参数：
+
+- `api_key`: API密钥对象
+- `payloads`: 查询参数配置，类型为 `MessageListQueryPayloads`
+
+`MessageListQueryPayloads` 包含以下字段：
+
+- `conversation_id`: 对话ID
+- `user`: 用户ID
+- `first_id`: (可选) 当前页第一条聊天记录的ID，用于分页
+- `limit`: (可选) 返回消息数量，默认20条，最大100条，最小1条
+
+### 返回值
+
+方法返回 `MessageList` 对象，包含以下字段：
+
+- `data`: 消息列表，每个元素为 `Message` 对象
+- `has_more`: 是否有更多数据
+- `limit`: 实际返回数量
+
+`Message` 对象包含以下字段：
+
+- `id`: 消息ID
+- `query`: 用户问题
+- `answer`: AI回答
+- `created_time`: 创建时间
