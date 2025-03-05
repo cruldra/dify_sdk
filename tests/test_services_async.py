@@ -9,7 +9,7 @@ import pytest_asyncio
 from unittest.mock import MagicMock, AsyncMock
 
 from dify.services import AppService, DifyClient, DifyAPIException
-from dify.app.schemas import App, Pagination, DifyAppMode
+from dify.app.schemas import App, Pagination, AppMode
 
 if TYPE_CHECKING:
     from _pytest.monkeypatch import MonkeyPatch
@@ -71,11 +71,11 @@ async def test_get_apps_success(app_service: AppService, mocker: "MockerFixture"
     # 验证应用数据
     assert result.data[0].id == "app1"
     assert result.data[0].name == "测试应用1"
-    assert result.data[0].mode == DifyAppMode.CHAT
+    assert result.data[0].mode == AppMode.CHAT
     
     assert result.data[1].id == "app2"
     assert result.data[1].name == "测试应用2"
-    assert result.data[1].mode == DifyAppMode.COMPLETION
+    assert result.data[1].mode == AppMode.COMPLETION
 
 
 @pytest.mark.asyncio
@@ -107,7 +107,7 @@ async def test_get_apps_with_mode_filter(app_service: AppService, mocker: "Mocke
     mocker.patch("httpx.AsyncClient", return_value=mock_client)
     
     # 调用方法，使用模式过滤
-    result = await app_service.get_apps(mode=DifyAppMode.CHAT)
+    result = await app_service.get_apps(mode=AppMode.CHAT)
     
     # 验证请求参数
     args, kwargs = mock_client.__aenter__.return_value.get.call_args
@@ -115,7 +115,7 @@ async def test_get_apps_with_mode_filter(app_service: AppService, mocker: "Mocke
     
     # 验证结果
     assert len(result.data) == 1
-    assert result.data[0].mode == DifyAppMode.CHAT
+    assert result.data[0].mode == AppMode.CHAT
 
 
 @pytest.mark.asyncio

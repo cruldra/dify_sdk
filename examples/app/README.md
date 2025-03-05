@@ -101,7 +101,20 @@ python examples/app/delete_api_key.py
 python examples/app/chat.py
 ```
 
-### 8. 运行工作流 (run.py)
+### 8. 补全功能 (completion.py)
+
+演示如何使用 `DifyApp.completion()` 方法与Dify应用进行补全交互，包括：
+- 创建补全请求配置
+- 发送补全请求并处理流式响应
+- 处理不同类型的事件（消息、消息结束、错误等）
+- 展示如何获取和使用API密钥
+- 展示如何处理补全结果
+
+```bash
+python examples/app/completion.py
+```
+
+### 9. 运行工作流 (run.py)
 
 演示如何使用 `DifyApp.run()` 方法运行Dify工作流应用，包括：
 - 获取工作流应用列表

@@ -6,7 +6,7 @@ from typing import Literal, Optional, List, Annotated, Union
 from pydantic import BaseModel, Field, model_validator
 
 
-class DifyAppMode(str, Enum):
+class AppMode(str, Enum):
     CHAT = "chat"
     AGENT_CHAT = "agent-chat"
     WORKFLOW = "workflow"
@@ -102,7 +102,7 @@ class App(BaseModel):
         default=None, description="最大活跃请求数"
     )
     description: Optional[str] = Field(default=None, description="应用描述")
-    mode: Optional[DifyAppMode] = Field(default=None, description="应用模式")
+    mode: Optional[AppMode] = Field(default=None, description="应用模式")
     icon_type: Optional[str] = Field(default=None, description="图标类型")
     icon: Optional[str] = Field(default=None, description="图标")
     icon_background: Optional[str] = Field(default=None, description="图标背景")
@@ -184,8 +184,8 @@ class UploadFile(BaseModel):
         if self.transfer_method == TransferMethod.REMOTE_URL and not self.url:
             raise ValueError("当传递方式为remote_url时，必须提供url")
         if (
-            self.transfer_method == TransferMethod.LOCAL_FILE
-            and not self.upload_file_id
+                self.transfer_method == TransferMethod.LOCAL_FILE
+                and not self.upload_file_id
         ):
             raise ValueError("当传递方式为local_file时，必须提供upload_file_id")
         return self

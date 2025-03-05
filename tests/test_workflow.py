@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from dify.app import DifyApp
-from dify.app.schemas import App, DifyAppMode, ApiKey, RunWorkflowPayloads, ConversationEvent, ConversationEventType
+from dify.app.schemas import App, AppMode, ApiKey, RunWorkflowPayloads, ConversationEvent, ConversationEventType
 from dify.app.utils import parse_event
 from dify.http import AdminClient, ApiClient
 
@@ -38,7 +38,7 @@ def mock_workflow_app():
     return App(
         id="app-workflow-123456",
         name="测试工作流应用",
-        mode=DifyAppMode.WORKFLOW,
+        mode=AppMode.WORKFLOW,
         description="这是一个测试工作流应用",
     )
 

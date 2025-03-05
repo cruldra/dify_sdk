@@ -16,10 +16,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from dify.app import DifyApp
 from dify.app.schemas import (
-    App, 
-    ApiKey, 
-    DifyAppMode, 
-    Pagination, 
+    App,
+    ApiKey,
+    AppMode,
+    Pagination,
     RunWorkflowPayloads,
     ChatMessageEvent,
     MessageEndEvent,
@@ -57,7 +57,7 @@ def mock_workflow_app():
     return App(
         id="app-workflow-123456",
         name="测试工作流应用",
-        mode=DifyAppMode.WORKFLOW,
+        mode=AppMode.WORKFLOW,
         description="这是一个测试工作流应用",
         created_at="2023-01-01T00:00:00Z",
     )

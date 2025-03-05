@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from dify.app import DifyApp
-from dify.app.schemas import App, DifyAppMode, ChatPayloads
+from dify.app.schemas import App, AppMode, ChatPayloads
 from dify.http import AdminClient, ApiClient
 
 
@@ -34,7 +34,7 @@ def mock_app():
     return {
         "id": "app-123456",
         "name": "测试应用",
-        "mode": DifyAppMode.CHAT,
+        "mode": AppMode.CHAT,
         "description": "这是一个测试应用",
     }
 
@@ -62,7 +62,7 @@ async def test_find_by_id(dify_app, mock_admin_client, mock_app):
     assert isinstance(app, App)
     assert app.id == "app-123456"
     assert app.name == "测试应用"
-    assert app.mode == DifyAppMode.CHAT
+    assert app.mode == AppMode.CHAT
     
     # 验证调用
     mock_admin_client.get.assert_called_once_with("/apps/app-123456")
