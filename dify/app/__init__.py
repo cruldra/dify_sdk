@@ -1,6 +1,7 @@
 import json
 from typing import AsyncGenerator
 
+from .conversation import DifyConversation
 from .schemas import (
     ApiKey,
     App,
@@ -9,11 +10,11 @@ from .schemas import (
     ConversationEventType,
     RunWorkflowPayloads,
     AppMode,
+    AppParameters,
 )
 from .utils import parse_event
 from ..http import AdminClient
 from ..schemas import Pagination
-from .conversation import DifyConversation
 
 
 class DifyApp:
@@ -22,12 +23,12 @@ class DifyApp:
         self.conversation = DifyConversation(admin_client)
 
     async def find_list(
-        self,
-        page: int = 1,
-        limit: int = 100,
-        mode: AppMode = None,
-        name: str = "",
-        is_created_by_me: bool = False,
+            self,
+            page: int = 1,
+            limit: int = 100,
+            mode: AppMode = None,
+            name: str = "",
+            is_created_by_me: bool = False,
     ):
         """从 Dify 分页获取应用列表
 
@@ -142,7 +143,7 @@ class DifyApp:
         return True
 
     async def chat(
-        self, key: ApiKey, payloads: ChatPayloads
+            self, key: ApiKey, payloads: ChatPayloads
     ) -> AsyncGenerator[ConversationEvent, None]:
         """和应用进行对话,适用`App.mode`为`chat`的应用.
 
@@ -170,7 +171,7 @@ class DifyApp:
 
         # 使用API客户端发送流式请求
         async for chunk in api_client.stream(
-            f"/chat-messages", headers=headers, json=request_data
+                f"/chat-messages", headers=headers, json=request_data
         ):
             # 解析事件数据
             for line in chunk.decode().split("\n"):
@@ -181,7 +182,7 @@ class DifyApp:
                     yield event
 
     async def completion(
-        self, api_key: ApiKey, payloads: RunWorkflowPayloads
+            self, api_key: ApiKey, payloads: RunWorkflowPayloads
     ) -> AsyncGenerator[ConversationEvent, None]:
         """使用应用进行补全,适用`App.mode`为`completion`的应用.
 
@@ -212,10 +213,10 @@ class DifyApp:
 
         # 使用API客户端发送流式请求
         async for chunk in api_client.stream(
-            "/completion-messages",
-            method="POST",
-            headers=headers,
-            json=request_data,
+                "/completion-messages",
+                method="POST",
+                headers=headers,
+                json=request_data,
         ):
             # 解析事件数据
             for line in chunk.decode("utf-8").split("\n"):
@@ -226,7 +227,7 @@ class DifyApp:
                     yield event
 
     async def run(
-        self, api_key: ApiKey, payloads: RunWorkflowPayloads
+            self, api_key: ApiKey, payloads: RunWorkflowPayloads
     ) -> AsyncGenerator[ConversationEvent, None]:
         """使用应用运行工作流,适用`App.mode`为`workflow`的应用.
 
@@ -257,9 +258,9 @@ class DifyApp:
 
         # 使用API客户端发送流式请求
         async for chunk in api_client.stream(
-            "/workflows/run",
-            json=request_data,
-            headers=headers,
+                "/workflows/run",
+                json=request_data,
+                headers=headers,
         ):
             # 解析事件数据
             for line in chunk.decode().split("\n"):
@@ -268,3 +269,23 @@ class DifyApp:
                     # 根据事件类型返回对应的事件对象
                     event = parse_event(event_data)
                     yield event
+
+    async def get_parameters(self, api_key: ApiKey) -> AppParameters:
+        """获取应用参数配置
+
+        Args:
+            api_key: API密钥对象或密钥字符串
+
+        Returns:
+            AppParameters: 应用参数配置对象
+        """
+        # 处理API密钥参数
+        api_client = self.admin_client.create_api_client(api_key.token)
+        # 发送请求获取应用参数
+        response = await  api_client.get(
+            f"/parameters",
+            headers={"Content-Type": "application/json"},
+        )
+
+        # 解析响应数据并返回AppParameters对象
+        return AppParameters.model_validate(response)

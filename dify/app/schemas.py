@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
-from typing import Literal, Optional, List, Annotated, Union
+from typing import Any, Dict, Literal, Optional, List, Annotated, Union
 
 from pydantic import BaseModel, Field, computed_field, model_validator
 
@@ -978,3 +978,193 @@ class OperationResult(BaseModel):
     """操作结果模型"""
 
     result: str = Field(default="success", description="操作结果")
+
+
+class SuggestedQuestionsAfterAnswerConfig(BaseModel):
+    """回答后推荐问题配置
+
+    Attributes:
+        enabled: 是否开启回答后推荐问题功能
+    """
+
+    enabled: bool = Field(default=False, description="是否开启回答后推荐问题功能")
+
+
+class SpeechToTextConfig(BaseModel):
+    """语音转文本配置
+
+    Attributes:
+        enabled: 是否开启语音转文本功能
+    """
+
+    enabled: bool = Field(default=False, description="是否开启语音转文本功能")
+
+
+class RetrieverResourceConfig(BaseModel):
+    """引用和归属配置
+
+    Attributes:
+        enabled: 是否开启引用和归属功能
+    """
+
+    enabled: bool = Field(default=False, description="是否开启引用和归属功能")
+
+
+class AnnotationReplyConfig(BaseModel):
+    """标记回复配置
+
+    Attributes:
+        enabled: 是否开启标记回复功能
+    """
+
+    enabled: bool = Field(default=False, description="是否开启标记回复功能")
+
+
+class TextInput(BaseModel):
+    """文本输入控件配置
+
+    Attributes:
+        label: 控件展示标签名
+        variable: 控件ID
+        required: 是否必填
+        default: 默认值
+    """
+
+    label: str = Field(description="控件展示标签名")
+    variable: str = Field(description="控件ID")
+    required: bool = Field(default=False, description="是否必填")
+    default: str = Field(default="", description="默认值")
+
+
+class ParagraphInput(BaseModel):
+    """段落文本输入控件配置
+
+    Attributes:
+        label: 控件展示标签名
+        variable: 控件ID
+        required: 是否必填
+        default: 默认值
+    """
+
+    label: str = Field(description="控件展示标签名")
+    variable: str = Field(description="控件ID")
+    required: bool = Field(default=False, description="是否必填")
+    default: str = Field(default="", description="默认值")
+
+
+class SelectInput(BaseModel):
+    """下拉控件配置
+
+    Attributes:
+        label: 控件展示标签名
+        variable: 控件ID
+        required: 是否必填
+        default: 默认值
+        options: 选项值列表
+    """
+
+    label: str = Field(description="控件展示标签名")
+    variable: str = Field(description="控件ID")
+    required: bool = Field(default=False, description="是否必填")
+    default: str = Field(default="", description="默认值")
+    options: List[str] = Field(default_factory=list, description="选项值列表")
+
+
+class FileUploadConfig(BaseModel):
+    """文件上传配置
+
+    Attributes:
+        image: 图片设置
+    """
+
+    class Image(BaseModel):
+        """图片设置
+
+        Attributes:
+            enabled: 是否开启
+            number_limits: 图片数量限制，默认3
+            transfer_methods: 传递方式列表，remote_url, local_file，必选一个
+        """
+
+        enabled: bool = Field(default=False, description="是否开启")
+        number_limits: int = Field(default=3, description="图片数量限制，默认3")
+        transfer_methods: List[str] = Field(
+            default_factory=list,
+            description="传递方式列表，remote_url, local_file，必选一个",
+        )
+
+    image: Image = Field(default_factory=Image, description="图片设置")
+
+
+class SystemParameters(BaseModel):
+    """系统参数配置
+
+    Attributes:
+        file_size_limit: 文档上传大小限制 (MB)
+        image_file_size_limit: 图片文件上传大小限制 (MB)
+        audio_file_size_limit: 音频文件上传大小限制 (MB)
+        video_file_size_limit: 视频文件上传大小限制 (MB)
+    """
+
+    file_size_limit: int = Field(default=10, description="文档上传大小限制 (MB)")
+    image_file_size_limit: int = Field(
+        default=5, description="图片文件上传大小限制 (MB)"
+    )
+    audio_file_size_limit: int = Field(
+        default=10, description="音频文件上传大小限制 (MB)"
+    )
+    video_file_size_limit: int = Field(
+        default=20, description="视频文件上传大小限制 (MB)"
+    )
+
+
+class UserInputItem(BaseModel):
+    """用户输入项
+
+    Attributes:
+        text_input: 文本输入项
+        paragraph_input: 段落输入项
+        select_input: 下拉输入项
+    """
+
+    text_input: TextInput = Field(default=None, alias="text-input")
+    paragraph_input: ParagraphInput = Field(default=None, alias="paragraph-input")
+    select_input: SelectInput = Field(default=None, alias="select-input")
+
+
+class AppParameters(BaseModel):
+    """应用参数模型
+
+    Attributes:
+        opening_statement: 开场白
+        suggested_questions: 开场推荐问题列表，用于引导用户进行对话
+        suggested_questions_after_answer: 回答后推荐问题配置
+        speech_to_text: 语音转文本配置
+        retriever_resource: 引用和归属配置
+        annotation_reply: 标记回复配置
+        user_input_form: 用户输入项
+        file_upload: 文件上传配置
+    """
+
+    opening_statement: str = Field(default="", description="开场白")
+    suggested_questions: List[str] = Field(
+        default_factory=list, description="开场推荐问题列表，用于引导用户进行对话"
+    )
+    suggested_questions_after_answer: SuggestedQuestionsAfterAnswerConfig = Field(
+        default=SuggestedQuestionsAfterAnswerConfig(), description="回答后推荐问题配置"
+    )
+    speech_to_text: SpeechToTextConfig = Field(
+        default=SpeechToTextConfig(), description="语音转文本配置"
+    )
+    retriever_resource: RetrieverResourceConfig = Field(
+        default=RetrieverResourceConfig(), description="引用和归属配置"
+    )
+    annotation_reply: AnnotationReplyConfig = Field(
+        default=AnnotationReplyConfig(), description="标记回复配置"
+    )
+    user_input_form: List[UserInputItem] = Field(
+        default_factory=list, description="用户输入项"
+    )
+    file_upload: FileUploadConfig = Field(
+        default=FileUploadConfig(), description="文件上传配置"
+    )
