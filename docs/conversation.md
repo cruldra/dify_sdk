@@ -76,10 +76,50 @@ else:
     print("对话删除失败")
 ```
 
+## 重命名对话
+
+您可以使用`rename`方法重命名特定对话：
+
+```python
+from dify.app.conversation.schemas import ConversationRenamePayloads
+
+# 手动指定新名称
+rename_payloads = ConversationRenamePayloads(
+    name="新对话名称",
+    auto_generate=False,
+    user="user-id"
+)
+
+# 重命名对话
+renamed_conversation = await dify_app.conversation.rename(
+    api_key,
+    conversation_id="conversation-id",
+    payloads=rename_payloads
+)
+
+print(f"对话已重命名为: {renamed_conversation.name}")
+
+# 自动生成对话名称
+auto_rename_payloads = ConversationRenamePayloads(
+    auto_generate=True,
+    user="user-id"
+)
+
+# 自动重命名对话
+auto_renamed_conversation = await dify_app.conversation.rename(
+    api_key,
+    conversation_id="conversation-id",
+    payloads=auto_rename_payloads
+)
+
+print(f"对话已自动重命名为: {auto_renamed_conversation.name}")
+```
+
 ## 完整示例
 
 完整示例请参考以下文件：
 
 - 获取对话列表：[examples/app/conversation/find_list.py](../examples/app/conversation/find_list.py)
 - 获取消息列表：[examples/app/conversation/get_messages.py](../examples/app/conversation/get_messages.py)
-- 删除对话：[examples/app/conversation/delete_conversation.py](../examples/app/conversation/delete_conversation.py) 
+- 删除对话：[examples/app/conversation/delete_conversation.py](../examples/app/conversation/delete_conversation.py)
+- 重命名对话：[examples/app/conversation/rename_conversation.py](../examples/app/conversation/rename_conversation.py) 

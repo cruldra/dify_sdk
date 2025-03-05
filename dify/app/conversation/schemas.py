@@ -184,3 +184,11 @@ class MessageList(BaseModel):
     )
     has_more: Optional[bool] = Field(default=False, description="是否有更多数据")
     limit: Optional[int] = Field(default=20, description="实际返回数量")
+
+
+class ConversationRenamePayloads(BaseModel):
+    """会话重命名请求模型"""
+
+    name: Optional[str] = Field(default=None, description="新会话名称")
+    auto_generate: Optional[bool] = Field(default=False, description="是否自动生成标题")
+    user: str = Field(description="用户标识")
