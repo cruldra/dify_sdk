@@ -2,7 +2,7 @@ from typing import Any, AsyncGenerator
 
 import httpx
 
-
+from .exceptions import DifyException
 class HttpClient:
     def __init__(self, base_url: str, key: str):
         self.base_url = base_url
@@ -27,7 +27,10 @@ class HttpClient:
             response = await client.get(
                 self.base_url + url, params=params, headers=merged_headers
             )
-            response.raise_for_status()
+            if response.status_code != 200:
+                raise DifyException(
+                    f"请求失败，状态码: {response.status_code}, 错误信息: {response.text}"
+                )
             return response.json()
 
     async def post(
@@ -39,7 +42,10 @@ class HttpClient:
             response = await client.post(
                 self.base_url + url, json=json, params=params, headers=merged_headers
             )
-            response.raise_for_status()
+            if response.status_code != 200:
+                raise DifyException(
+                    f"请求失败，状态码: {response.status_code}, 错误信息: {response.text}"
+                )
             return response.json()
 
     async def delete(self, url: str, params: dict = None, headers: dict = None):
@@ -49,7 +55,10 @@ class HttpClient:
             response = await client.delete(
                 self.base_url + url, params=params, headers=merged_headers
             )
-            response.raise_for_status()
+            if response.status_code != 200:
+                raise DifyException(
+                    f"请求失败，状态码: {response.status_code}, 错误信息: {response.text}"
+                )
 
     async def stream(
         self,
@@ -71,7 +80,7 @@ class HttpClient:
             ) as response:
                 if response.status_code != 200:
                     error_content = await response.aread()
-                    raise ValueError(
+                    raise DifyException(
                         f"请求失败，状态码: {response.status_code}, 错误信息: {error_content.decode('utf-8')}"
                     )
                 async for chunk in response.aiter_bytes():
