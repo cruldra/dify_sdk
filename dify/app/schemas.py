@@ -972,3 +972,9 @@ class ApiKey(BaseModel):
     token: str = Field(description="API令牌")
     last_used_at: Optional[int] = Field(default=None, description="最后使用时间戳")
     created_at: Optional[int] = Field(default=None, description="创建时间戳")
+
+
+class OperationResult(BaseModel):
+    """操作结果模型"""
+
+    result: str = Field(default="success", description="操作结果")

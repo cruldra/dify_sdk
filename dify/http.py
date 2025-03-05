@@ -1,8 +1,11 @@
+import json
 from typing import Any, AsyncGenerator
 
 import httpx
 
 from .exceptions import DifyException
+
+
 class HttpClient:
     def __init__(self, base_url: str, key: str):
         self.base_url = base_url
@@ -48,17 +51,34 @@ class HttpClient:
                 )
             return response.json()
 
-    async def delete(self, url: str, params: dict = None, headers: dict = None):
+    async def delete(
+        self,
+        url: str,
+        params: dict = None,
+        content: dict = None,
+        headers: dict = None,
+        ret_type: str = None,
+    ) -> Any:
         async with httpx.AsyncClient() as client:
             merged_headers = await self.__merge_headers__(headers)
 
-            response = await client.delete(
-                self.base_url + url, params=params, headers=merged_headers
+            response = await client.request(
+                "DELETE",
+                self.base_url + url,
+                params=params,
+                headers=merged_headers,
+                content=json.dumps(content) if content else None,
             )
             if response.status_code != 200:
                 raise DifyException(
                     f"请求失败，状态码: {response.status_code}, 错误信息: {response.text}"
                 )
+            if ret_type == "json":
+                return response.json()
+            elif ret_type == "text":
+                return response.text
+            else:
+                return None
 
     async def stream(
         self,

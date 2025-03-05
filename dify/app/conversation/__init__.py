@@ -1,5 +1,5 @@
 from dify.http import AdminClient
-from ..schemas import ApiKey
+from ..schemas import ApiKey, OperationResult
 from .schemas import ConversationListQueryPayloads, ConversationList, MessageListQueryPayloads, MessageList
 
 
@@ -70,3 +70,40 @@ class DifyConversation:
         )
 
         return MessageList.model_validate(response_data)
+        
+    async def delete(
+        self, api_key: ApiKey, conversation_id: str, user_id: str
+    ) -> OperationResult:
+        """删除Dify会话
+
+        Args:
+            api_key: API密钥
+            conversation_id: 会话ID
+            user_id: 用户ID
+
+        Returns:
+            OperationResult: 操作结果对象
+
+        Raises:
+            ValueError: 当API密钥为空时抛出
+            httpx.HTTPStatusError: 当API请求失败时抛出
+        """
+        if not api_key:
+            raise ValueError("API密钥不能为空")
+            
+        if not conversation_id:
+            raise ValueError("会话ID不能为空")
+            
+        if not user_id:
+            raise ValueError("用户ID不能为空")
+
+        api_client = self.admin_client.create_api_client(api_key.token)
+
+        # 发送删除请求
+        response_data = await api_client.delete(
+            f"/conversations/{conversation_id}",
+            content={"user": user_id},
+            ret_type="json",
+        )
+
+        return OperationResult.model_validate(response_data)
