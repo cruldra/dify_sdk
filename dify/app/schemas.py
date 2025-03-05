@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from enum import Enum
 from typing import Literal, Optional, List, Annotated, Union
 
@@ -183,8 +184,8 @@ class UploadFile(BaseModel):
         if self.transfer_method == TransferMethod.REMOTE_URL and not self.url:
             raise ValueError("当传递方式为remote_url时，必须提供url")
         if (
-                self.transfer_method == TransferMethod.LOCAL_FILE
-                and not self.upload_file_id
+            self.transfer_method == TransferMethod.LOCAL_FILE
+            and not self.upload_file_id
         ):
             raise ValueError("当传递方式为local_file时，必须提供upload_file_id")
         return self
@@ -266,6 +267,10 @@ class ConversationEventType(str, Enum):
         MESSAGE_REPLACE: 消息替换
         ERROR: 错误
         PING: 心跳检测
+        WORKFLOW_STARTED: 工作流开始
+        WORKFLOW_FINISHED: 工作流结束
+        NODE_STARTED: 节点开始
+        NODE_FINISHED: 节点结束
     """
 
     MESSAGE = "message"
@@ -278,6 +283,10 @@ class ConversationEventType(str, Enum):
     MESSAGE_REPLACE = "message_replace"
     ERROR = "error"
     PING = "ping"
+    WORKFLOW_STARTED = "workflow_started"
+    WORKFLOW_FINISHED = "workflow_finished"
+    NODE_STARTED = "node_started"
+    NODE_FINISHED = "node_finished"
 
 
 class ChatMessageEvent(BaseModel):
@@ -637,6 +646,281 @@ class TTSMessageEvent(BaseModel):
     }
 
 
+class WorkflowStartedData(BaseModel):
+    """工作流开始事件数据模型
+
+    Attributes:
+        id: 工作流执行ID
+        workflow_id: 关联工作流ID
+        sequence_number: 自增序号，从1开始
+        created_at: 开始时间戳
+    """
+
+    id: Optional[str] = Field(default=None, description="工作流执行ID")
+    workflow_id: Optional[str] = Field(default=None, description="关联工作流ID")
+    sequence_number: Optional[int] = Field(
+        default=None, description="自增序号，从1开始"
+    )
+    created_at: Optional[int] = Field(default=None, description="开始时间戳")
+
+
+class WorkflowStartedEvent(BaseModel):
+    """工作流开始事件Schema
+
+    Attributes:
+        event: 事件类型，固定为'workflow_started'
+        task_id: 任务ID，用于请求跟踪和停止响应接口
+        workflow_run_id: workflow执行ID
+        data: 详细内容，包含工作流执行信息
+    """
+
+    event: Literal[ConversationEventType.WORKFLOW_STARTED] = Field(
+        default=ConversationEventType.WORKFLOW_STARTED, description="事件类型"
+    )
+    task_id: Optional[str] = Field(
+        default=None, description="任务ID，用于请求跟踪和停止响应接口"
+    )
+    workflow_run_id: Optional[str] = Field(default=None, description="workflow执行ID")
+    data: Optional[WorkflowStartedData] = Field(
+        default=None, description="详细内容，包含工作流执行信息"
+    )
+
+    # Pydantic V2 配置方式
+    model_config = {
+        "populate_by_name": True,
+        "protected_namespaces": (),
+    }
+
+
+class NodeStartedData(BaseModel):
+    """节点开始事件数据模型
+
+    Attributes:
+        id: workflow 执行 ID
+        node_id: 节点 ID
+        node_type: 节点类型
+        title: 节点名称
+        index: 执行序号，用于展示 Tracing Node 顺序
+        predecessor_node_id: 前置节点 ID，用于画布展示执行路径
+        inputs: 节点中所有使用到的前置节点变量内容
+        created_at: 开始时间戳
+    """
+
+    id: Optional[str] = Field(default=None, description="workflow 执行 ID")
+    node_id: Optional[str] = Field(default=None, description="节点 ID")
+    node_type: Optional[str] = Field(default=None, description="节点类型")
+    title: Optional[str] = Field(default=None, description="节点名称")
+    index: Optional[int] = Field(
+        default=None, description="执行序号，用于展示 Tracing Node 顺序"
+    )
+    predecessor_node_id: Optional[str] = Field(
+        default=None, description="前置节点 ID，用于画布展示执行路径"
+    )
+    inputs: Optional[dict] = Field(
+        default_factory=dict, description="节点中所有使用到的前置节点变量内容"
+    )
+    created_at: Optional[int] = Field(default=None, description="开始时间戳")
+
+
+class NodeStartedEvent(BaseModel):
+    """节点开始事件Schema
+
+    Attributes:
+        event: 事件类型，固定为'node_started'
+        task_id: 任务ID，用于请求跟踪和停止响应接口
+        workflow_run_id: workflow执行ID
+        data: 详细内容，包含节点执行信息
+    """
+
+    event: Literal[ConversationEventType.NODE_STARTED] = Field(
+        default=ConversationEventType.NODE_STARTED, description="事件类型"
+    )
+    task_id: Optional[str] = Field(
+        default=None, description="任务ID，用于请求跟踪和停止响应接口"
+    )
+    workflow_run_id: Optional[str] = Field(default=None, description="workflow执行ID")
+    data: Optional[NodeStartedData] = Field(
+        default=None, description="详细内容，包含节点执行信息"
+    )
+
+    # Pydantic V2 配置方式
+    model_config = {
+        "populate_by_name": True,
+        "protected_namespaces": (),
+    }
+
+
+class NodeExecutionMeta(BaseModel):
+    """节点执行元数据Schema
+
+    Attributes:
+        execution_metadata: 执行元数据，包含详细的执行信息
+        total_tokens: 总使用tokens数量
+        total_price: 总费用
+        currency: 货币单位，如USD/RMB
+    """
+
+    total_tokens: Optional[int] = Field(default=None, description="总使用tokens数量")
+    total_price: Optional[Decimal] = Field(default=None, description="总费用")
+    currency: Optional[str] = Field(default=None, description="货币单位，如USD/RMB")
+
+    # Pydantic V2 配置方式
+    model_config = {
+        "populate_by_name": True,
+        "protected_namespaces": (),
+    }
+
+
+class NodeFinishedData(BaseModel):
+    """节点完成数据Schema
+
+    Attributes:
+        id: 节点执行ID
+        node_id: 节点ID
+        index: 执行序号，用于展示Tracing Node顺序
+        predecessor_node_id: 前置节点ID，用于画布展示执行路径
+        inputs: 节点中所有使用到的前置节点变量内容
+        process_data: 节点过程数据
+        outputs: 输出内容
+        status: 执行状态，包括running/succeeded/failed/stopped
+        error: 错误原因
+        elapsed_time: 耗时（秒）
+        execution_metadata: 元数据
+        total_tokens: 总使用tokens数量
+        total_price: 总费用
+        currency: 货币单位，如USD/RMB
+        created_at: 开始时间戳
+    """
+
+    id: Optional[str] = Field(default=None, description="节点执行ID")
+    node_id: Optional[str] = Field(default=None, description="节点ID")
+    index: Optional[int] = Field(
+        default=None, description="执行序号，用于展示Tracing Node顺序"
+    )
+    predecessor_node_id: Optional[str] = Field(
+        default=None, description="前置节点ID，用于画布展示执行路径"
+    )
+    inputs: Optional[dict] = Field(
+        default=None, description="节点中所有使用到的前置节点变量内容"
+    )
+    process_data: Optional[dict] = Field(default=None, description="节点过程数据")
+    outputs: Optional[dict] = Field(default=None, description="输出内容")
+    status: Optional[str] = Field(
+        default=None, description="执行状态，包括running/succeeded/failed/stopped"
+    )
+    error: Optional[str] = Field(default=None, description="错误原因")
+    elapsed_time: Optional[float] = Field(default=None, description="耗时（秒）")
+    execution_metadata: Optional[NodeExecutionMeta] = Field(
+        default=None, description="元数据"
+    )
+    created_at: Optional[int] = Field(default=None, description="开始时间戳")
+
+    # Pydantic V2 配置方式
+    model_config = {
+        "populate_by_name": True,
+        "protected_namespaces": (),
+    }
+
+
+class NodeFinishedEvent(BaseModel):
+    """节点完成事件Schema
+
+    Attributes:
+        event: 事件类型，固定为'node_finished'
+        task_id: 任务ID，用于请求跟踪和停止响应接口
+        workflow_run_id: workflow执行ID
+        data: 详细内容，包含节点执行信息
+    """
+
+    event: Literal[ConversationEventType.NODE_FINISHED] = Field(
+        default=ConversationEventType.NODE_FINISHED, description="事件类型"
+    )
+    task_id: Optional[str] = Field(
+        default=None, description="任务ID，用于请求跟踪和停止响应接口"
+    )
+    workflow_run_id: Optional[str] = Field(default=None, description="workflow执行ID")
+    data: Optional[NodeFinishedData] = Field(
+        default=None, description="详细内容，包含节点执行信息"
+    )
+
+    # Pydantic V2 配置方式
+    model_config = {
+        "populate_by_name": True,
+        "protected_namespaces": (),
+    }
+
+
+class WorkflowStatus(str, Enum):
+    RUNNING = "running"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+    STOPPED = "stopped"
+
+
+class WorkflowFinishedData(BaseModel):
+    """工作流完成数据Schema
+
+    Attributes:
+        id: workflow执行ID
+        workflow_id: 关联Workflow ID
+        status: 执行状态，包括running/succeeded/failed/stopped
+        outputs: 输出内容
+        error: 错误原因
+        elapsed_time: 耗时（秒）
+        total_tokens: 总使用tokens
+        total_steps: 总步数
+        created_at: 开始时间戳
+        finished_at: 结束时间戳
+    """
+
+    id: Optional[str] = Field(default=None, description="workflow执行ID")
+    workflow_id: Optional[str] = Field(default=None, description="关联Workflow ID")
+    status: Optional[WorkflowStatus] = Field(
+        default=None, description="执行状态，包括running/succeeded/failed/stopped"
+    )
+    outputs: Optional[dict] = Field(default=None, description="输出内容")
+    error: Optional[str] = Field(default=None, description="错误原因")
+    elapsed_time: Optional[float] = Field(default=None, description="耗时（秒）")
+    total_tokens: Optional[int] = Field(default=None, description="总使用tokens")
+    total_steps: Optional[int] = Field(default=None, description="总步数")
+    created_at: Optional[int] = Field(default=None, description="开始时间戳")
+    finished_at: Optional[int] = Field(default=None, description="结束时间戳")
+
+    # Pydantic V2 配置方式
+    model_config = {
+        "populate_by_name": True,
+        "protected_namespaces": (),
+    }
+
+
+class WorkflowFinishedEvent(BaseModel):
+    """工作流完成事件Schema
+
+    Attributes:
+        event (str): 事件类型，固定为'workflow_finished'
+        task_id (str): 任务ID，用于请求跟踪和停止响应接口
+        workflow_run_id (str): workflow执行ID
+        data (WorkflowFinishedData): 工作流完成数据
+    """
+
+    event: Literal[ConversationEventType.WORKFLOW_FINISHED] = Field(
+        default=ConversationEventType.WORKFLOW_FINISHED, description="事件类型"
+    )
+    task_id: Optional[str] = Field(
+        default=None, description="任务ID，用于请求跟踪和停止响应接口"
+    )
+    workflow_run_id: Optional[str] = Field(default=None, description="workflow执行ID")
+    data: Optional[WorkflowFinishedData] = Field(
+        default=None, description="工作流完成数据"
+    )
+
+    # Pydantic V2 配置方式
+    model_config = {
+        "populate_by_name": True,
+        "protected_namespaces": (),
+    }
+
+
 # 创建联合类型
 ConversationEvent = Annotated[
     Union[
@@ -649,6 +933,10 @@ ConversationEvent = Annotated[
         TTSMessageEndEvent,
         MessageReplaceEvent,
         ErrorEvent,
+        WorkflowStartedEvent,
+        NodeStartedEvent,
+        NodeFinishedEvent,
+        WorkflowFinishedEvent,
     ],
     Field(discriminator="event"),
 ]

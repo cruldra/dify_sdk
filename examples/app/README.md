@@ -89,6 +89,32 @@ python examples/app/get_keys.py
 python examples/app/delete_api_key.py
 ```
 
+### 7. 聊天功能 (chat.py)
+
+演示如何使用 `DifyApp.chat()` 方法与Dify应用进行对话交互，包括：
+- 创建聊天请求配置
+- 发送聊天请求并处理流式响应
+- 处理不同类型的事件（消息、消息结束、错误等）
+- 展示如何获取和使用API密钥
+
+```bash
+python examples/app/chat.py
+```
+
+### 8. 运行工作流 (run.py)
+
+演示如何使用 `DifyApp.run()` 方法运行Dify工作流应用，包括：
+- 获取工作流应用列表
+- 创建工作流请求配置
+- 获取并使用API密钥
+- 运行工作流并处理流式响应
+- 处理不同类型的事件（消息、消息结束、错误等）
+- 展示如何获取工作流执行的元数据（如Token使用情况）
+
+```bash
+python examples/app/run.py
+```
+
 ## 注意事项
 
 - 这些示例使用了异步编程模式，因为Dify SDK的API是异步的

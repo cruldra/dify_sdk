@@ -19,7 +19,7 @@ class HttpClient:
         return merged_headers
 
     async def get(
-            self, url: str, params: dict = None, headers: dict = None
+        self, url: str, params: dict = None, headers: dict = None
     ) -> dict[str, Any]:
         async with httpx.AsyncClient() as client:
             merged_headers = await self.__merge_headers__(headers)
@@ -31,7 +31,7 @@ class HttpClient:
             return response.json()
 
     async def post(
-            self, url: str, json: dict = None, params: dict = None, headers: dict = None
+        self, url: str, json: dict = None, params: dict = None, headers: dict = None
     ) -> dict[str, Any]:
         async with httpx.AsyncClient() as client:
             merged_headers = await self.__merge_headers__(headers)
@@ -42,9 +42,7 @@ class HttpClient:
             response.raise_for_status()
             return response.json()
 
-    async def delete(
-            self, url: str, params: dict = None, headers: dict = None
-    ) :
+    async def delete(self, url: str, params: dict = None, headers: dict = None):
         async with httpx.AsyncClient() as client:
             merged_headers = await self.__merge_headers__(headers)
 
@@ -54,15 +52,28 @@ class HttpClient:
             response.raise_for_status()
 
     async def stream(
-            self, url: str, params: dict = None, headers: dict = None, method: str = "POST", json: dict = None
+        self,
+        url: str,
+        params: dict = None,
+        headers: dict = None,
+        method: str = "POST",
+        json: dict = None,
     ) -> AsyncGenerator[bytes, None]:
         async with httpx.AsyncClient() as client:
             merged_headers = await self.__merge_headers__(headers)
 
             async with client.stream(
-                    method, self.base_url + url, params=params, headers=merged_headers, json=json
+                method,
+                self.base_url + url,
+                params=params,
+                headers=merged_headers,
+                json=json,
             ) as response:
-                response.raise_for_status()
+                if response.status_code != 200:
+                    error_content = await response.aread()
+                    raise ValueError(
+                        f"请求失败，状态码: {response.status_code}, 错误信息: {error_content.decode('utf-8')}"
+                    )
                 async for chunk in response.aiter_bytes():
                     yield chunk
 

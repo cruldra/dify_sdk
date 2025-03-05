@@ -34,5 +34,13 @@ def parse_event(data: dict) -> ConversationEvent:
         return MessageReplaceEvent(**data)
     elif event_type == ConversationEventType.ERROR:
         return ErrorEvent(**data)
+    elif event_type == ConversationEventType.WORKFLOW_STARTED:
+        return WorkflowStartedEvent(**data)
+    elif event_type == ConversationEventType.NODE_STARTED:
+        return NodeStartedEvent(**data)
+    elif event_type == ConversationEventType.NODE_FINISHED:
+        return NodeFinishedEvent(**data)
+    elif event_type == ConversationEventType.WORKFLOW_FINISHED:
+        return WorkflowFinishedEvent(**data)
     else:
         raise ValueError(f"不支持的事件类型: {event_type}")

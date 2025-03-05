@@ -261,7 +261,6 @@ class DifyApp:
 
         # 使用API客户端发送流式请求
         async for chunk in api_client.stream(
-            "POST",
             "/workflows/run",
             json=request_data,
             headers=headers,
