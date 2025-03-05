@@ -192,3 +192,17 @@ class ConversationRenamePayloads(BaseModel):
     name: Optional[str] = Field(default=None, description="新会话名称")
     auto_generate: Optional[bool] = Field(default=False, description="是否自动生成标题")
     user: str = Field(description="用户标识")
+
+
+class MessageFeedbackPayloads(BaseModel):
+    """消息反馈请求模型"""
+
+    rating: Optional[str] = Field(
+        None,
+        description="点赞 like, 点踩 dislike, 撤销点赞 null",
+        examples=["like", "dislike", None],
+    )
+    user: str = Field(..., description="用户标识")
+    content: Optional[str] = Field(
+        None, description="反馈的具体信息", examples=["这个回答很有帮助"]
+    )

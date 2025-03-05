@@ -7,6 +7,7 @@ from .schemas import (
     ConversationRenamePayloads,
     MessageListQueryPayloads,
     MessageList,
+    MessageFeedbackPayloads,
 )
 
 
@@ -109,11 +110,10 @@ class DifyConversation:
         # 发送删除请求
         response_data = await api_client.delete(
             f"/conversations/{conversation_id}",
-            content={"user": user_id},
-            ret_type="json",
+            params={"user": user_id},
         )
 
-        return OperationResult.model_validate(response_data)
+        return OperationResult(result="success")
 
     async def rename(
         self,
@@ -153,3 +153,42 @@ class DifyConversation:
         )
 
         return Conversation.model_validate(response_data)
+
+    async def submit_feedback(
+        self,
+        api_key: ApiKey,
+        message_id: str,
+        payloads: MessageFeedbackPayloads,
+    ) -> OperationResult:
+        """提交消息反馈
+
+        Args:
+            api_key: API密钥
+            message_id: 消息ID
+            payloads: 反馈请求参数配置
+
+        Returns:
+            OperationResult: 操作结果对象
+
+        Raises:
+            ValueError: 当API密钥为空时抛出
+            httpx.HTTPStatusError: 当API请求失败时抛出
+        """
+        if not api_key:
+            raise ValueError("API密钥不能为空")
+
+        if not message_id:
+            raise ValueError("消息ID不能为空")
+
+        api_client = self.admin_client.create_api_client(api_key.token)
+
+        # 准备请求参数
+        json_data = payloads.model_dump(exclude_none=True)
+
+        # 发送请求提交反馈
+        response_data = await api_client.post(
+            f"/messages/{message_id}/feedbacks",
+            json=json_data,
+        )
+
+        return OperationResult.model_validate(response_data)
