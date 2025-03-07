@@ -211,7 +211,7 @@ class DataSetCreatePayloads(BaseModel):
     }
 
 
-class DataSet(BaseModel):
+class DataSetInCreate(BaseModel):
     """数据集Schema
 
     Attributes:
@@ -245,15 +245,92 @@ class DataSet(BaseModel):
     }
 
 
+class Document(BaseModel):
+    """文档Schema
+
+    Attributes:
+        id: 文档ID
+        data_source_type: 数据源类型
+        data_source_info: 数据源信息
+        data_source_detail_dict: 数据源详细信息
+        dataset_process_rule_id: 数据集处理规则ID
+        name: 文档名称
+        created_from: 创建来源
+        created_by: 创建者ID
+        created_at: 创建时间戳
+        tokens: 文档token数
+        indexing_status: 索引状态
+        error: 错误信息
+        enabled: 是否启用
+        disabled_at: 禁用时间
+        disabled_by: 禁用者
+        archived: 是否归档
+        display_status: 显示状态
+        word_count: 字数统计
+        hit_count: 命中次数
+        doc_form: 文档格式
+    """
+
+    id: str = Field(description="文档ID")
+    position: int = Field(description="文档位置")
+    data_source_type: str = Field(default="upload_file", description="数据源类型")
+    data_source_info: dict = Field(description="数据源信息")
+    data_source_detail_dict: dict = Field(description="数据源详细信息")
+    dataset_process_rule_id: str = Field(description="数据集处理规则ID")
+    name: str = Field(description="文档名称")
+    created_from: str = Field(description="创建来源")
+    created_by: str = Field(description="创建者ID")
+    created_at: int = Field(description="创建时间戳")
+    tokens: int = Field(default=0, description="文档token数")
+    indexing_status: str = Field(default="waiting", description="索引状态")
+    error: Optional[str] = Field(default=None, description="错误信息")
+    enabled: bool = Field(default=True, description="是否启用")
+    disabled_at: Optional[int] = Field(default=None, description="禁用时间")
+    disabled_by: Optional[str] = Field(default=None, description="禁用者")
+    archived: bool = Field(default=False, description="是否归档")
+    display_status: str = Field(default="queuing", description="显示状态")
+    word_count: int = Field(default=0, description="字数统计")
+    hit_count: int = Field(default=0, description="命中次数")
+    doc_form: str = Field(default="text_model", description="文档格式")
+
+    # Pydantic V2 配置
+    model_config = {
+        "populate_by_name": True,
+        "protected_namespaces": (),
+    }
+
+
 class DataSetCreateResponse(BaseModel):
     """数据集创建响应Schema
 
     Attributes:
-        data_set: 数据集
+        dataset: 数据集
+        documents: 文档列表
     """
 
-    dataset: DataSet = Field(description="数据集")
+    dataset: DataSetInCreate = Field(description="数据集")
+    documents: List[Document] = Field(description="文档列表")
+    # Pydantic V2 配置
+    model_config = {
+        "populate_by_name": True,
+        "protected_namespaces": (),
+    }
 
+
+class DataSetInList(BaseModel):
+    """数据集列表Schema
+
+    Attributes:
+        id: 数据集ID
+        name: 数据集名称
+        description: 数据集描述
+        tags: 数据集标签
+    """
+
+    id: str = Field(description="数据集ID")
+    name: str = Field(description="数据集名称")
+    description: Optional[str] = Field(default=None, description="数据集描述")
+    tags: Optional[List[str]] = Field(default=None, description="数据集标签")
     # Pydantic V2 配置
     model_config = {
         "populate_by_name": True,
@@ -273,4 +350,7 @@ __all__ = [
     "DataSource",
     "DataSetCreatePayloads",
     "DataSetCreateResponse",
+    "DataSetInList",
+    "Document",
+    "DataSetInCreate",
 ]
