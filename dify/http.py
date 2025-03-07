@@ -30,7 +30,7 @@ class HttpClient:
             response = await client.get(
                 self.base_url + url, params=params, headers=merged_headers
             )
-            if response.status_code != 200:
+            if response.is_error:
                 raise DifyException(
                     f"请求失败，状态码: {response.status_code}, 错误信息: {response.text}"
                 )
@@ -69,7 +69,7 @@ class HttpClient:
                 headers=merged_headers,
                 content=json.dumps(content) if content else None,
             )
-            if response.status_code != 200:
+            if response.is_error:
                 raise DifyException(
                     f"请求失败，状态码: {response.status_code}, 错误信息: {response.text}"
                 )
@@ -98,7 +98,7 @@ class HttpClient:
                     headers=merged_headers,
                     json=json,
             ) as response:
-                if response.status_code != 200:
+                if response.is_error:
                     error_content = await response.aread()
                     raise DifyException(
                         f"请求失败，状态码: {response.status_code}, 错误信息: {error_content.decode('utf-8')}"

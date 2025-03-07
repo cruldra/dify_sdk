@@ -360,17 +360,17 @@ class DifyApp:
 
         Args:
             name: 应用名称
-            mode: 应用模式，可选值为chat、agent-chat、workflow、completion
-            description: 应用描述，默认为空字符串
-            icon_type: 图标类型，默认为emoji
-            icon: 图标，默认为🤖
-            icon_background: 图标背景色，默认为#FFEAD5
+            mode: 应用模式，可以是AppMode枚举或字符串
+            description: 应用描述
+            icon_type: 图标类型
+            icon: 图标
+            icon_background: 图标背景色
 
         Returns:
             App: 创建的应用对象
 
         Raises:
-            ValueError: 当应用名称为空或应用模式无效时抛出
+            ValueError: 当应用名称或模式为空时抛出
             httpx.HTTPStatusError: 当API请求失败时抛出
         """
         if not name:
@@ -391,6 +391,28 @@ class DifyApp:
         response_data = await self.admin_client.post("/apps", json=payload)
 
         return App.model_validate(response_data)
+
+    async def delete(self, app_id: str) -> bool:
+        """删除应用
+
+        Args:
+            app_id: 应用ID
+
+        Returns:
+            bool: 删除成功返回True
+
+        Raises:
+            ValueError: 当应用ID为空时抛出
+            httpx.HTTPStatusError: 当API请求失败时抛出
+        """
+        if not app_id:
+            raise ValueError("应用ID不能为空")
+
+        # 发送DELETE请求删除应用
+        await self.admin_client.delete(f"/apps/{app_id}")
+        
+        # 根据curl命令返回204状态码，表示删除成功
+        return True
 
 
 __all__ = [
