@@ -8,6 +8,7 @@ from .schemas import (
     ChatPayloads,
     ConversationEvent,
     ConversationEventType,
+    ModelConfigUpdatePayload,
     RunWorkflowPayloads,
     AppMode,
     AppParameters,
@@ -24,12 +25,12 @@ class DifyApp:
         self.conversation = DifyConversation(admin_client)
 
     async def find_list(
-            self,
-            page: int = 1,
-            limit: int = 100,
-            mode: AppMode = None,
-            name: str = "",
-            is_created_by_me: bool = False,
+        self,
+        page: int = 1,
+        limit: int = 100,
+        mode: AppMode = None,
+        name: str = "",
+        is_created_by_me: bool = False,
     ):
         """从 Dify 分页获取应用列表
 
@@ -144,7 +145,7 @@ class DifyApp:
         return True
 
     async def chat(
-            self, key: ApiKey|str, payloads: ChatPayloads
+        self, key: ApiKey | str, payloads: ChatPayloads
     ) -> AsyncGenerator[ConversationEvent, None]:
         """和应用进行对话,适用`App.mode`为`chat`的应用.
 
@@ -161,7 +162,9 @@ class DifyApp:
         """
         if not key:
             raise ValueError("应用密钥不能为空")
-        api_client = self.admin_client.create_api_client(key.token if isinstance(key, ApiKey) else key)
+        api_client = self.admin_client.create_api_client(
+            key.token if isinstance(key, ApiKey) else key
+        )
         # 准备请求数据
         request_data = payloads.model_dump(exclude_none=True)
 
@@ -172,7 +175,7 @@ class DifyApp:
 
         # 使用API客户端发送流式请求
         async for chunk in api_client.stream(
-                f"/chat-messages", headers=headers, json=request_data
+            f"/chat-messages", headers=headers, json=request_data
         ):
             # 解析事件数据
             for line in chunk.decode().split("\n"):
@@ -183,7 +186,7 @@ class DifyApp:
                     yield event
 
     async def completion(
-            self, api_key: ApiKey|str, payloads: RunWorkflowPayloads
+        self, api_key: ApiKey | str, payloads: RunWorkflowPayloads
     ) -> AsyncGenerator[ConversationEvent, None]:
         """使用应用进行补全,适用`App.mode`为`completion`的应用.
 
@@ -201,7 +204,9 @@ class DifyApp:
         if not api_key:
             raise ValueError("API密钥不能为空")
 
-        api_client = self.admin_client.create_api_client(api_key.token if isinstance(api_key, ApiKey) else api_key)
+        api_client = self.admin_client.create_api_client(
+            api_key.token if isinstance(api_key, ApiKey) else api_key
+        )
 
         # 准备请求数据
         request_data = payloads.model_dump(exclude_none=True)
@@ -214,10 +219,10 @@ class DifyApp:
 
         # 使用API客户端发送流式请求
         async for chunk in api_client.stream(
-                "/completion-messages",
-                method="POST",
-                headers=headers,
-                json=request_data,
+            "/completion-messages",
+            method="POST",
+            headers=headers,
+            json=request_data,
         ):
             # 解析事件数据
             for line in chunk.decode("utf-8").split("\n"):
@@ -228,7 +233,7 @@ class DifyApp:
                     yield event
 
     async def run(
-            self, api_key: ApiKey|str, payloads: RunWorkflowPayloads
+        self, api_key: ApiKey | str, payloads: RunWorkflowPayloads
     ) -> AsyncGenerator[ConversationEvent, None]:
         """使用应用运行工作流,适用`App.mode`为`workflow`的应用.
 
@@ -246,7 +251,9 @@ class DifyApp:
         if not api_key:
             raise ValueError("API密钥不能为空")
 
-        api_client = self.admin_client.create_api_client(api_key.token if isinstance(api_key, ApiKey) else api_key)
+        api_client = self.admin_client.create_api_client(
+            api_key.token if isinstance(api_key, ApiKey) else api_key
+        )
 
         # 准备请求数据
         request_data = payloads.model_dump(exclude_none=True)
@@ -259,9 +266,9 @@ class DifyApp:
 
         # 使用API客户端发送流式请求
         async for chunk in api_client.stream(
-                "/workflows/run",
-                json=request_data,
-                headers=headers,
+            "/workflows/run",
+            json=request_data,
+            headers=headers,
         ):
             # 解析事件数据
             for line in chunk.decode().split("\n"):
@@ -271,7 +278,7 @@ class DifyApp:
                     event = parse_event(event_data)
                     yield event
 
-    async def get_parameters(self, api_key: ApiKey|str) -> AppParameters:
+    async def get_parameters(self, api_key: ApiKey | str) -> AppParameters:
         """获取应用参数配置
 
         Args:
@@ -281,9 +288,11 @@ class DifyApp:
             AppParameters: 应用参数配置对象
         """
         # 处理API密钥参数
-        api_client = self.admin_client.create_api_client(api_key.token if isinstance(api_key, ApiKey) else api_key)
+        api_client = self.admin_client.create_api_client(
+            api_key.token if isinstance(api_key, ApiKey) else api_key
+        )
         # 发送请求获取应用参数
-        response = await  api_client.get(
+        response = await api_client.get(
             f"/parameters",
             headers={"Content-Type": "application/json"},
         )
@@ -292,7 +301,7 @@ class DifyApp:
         return AppParameters.model_validate(response)
 
     async def stop_message(
-        self, api_key: ApiKey|str, task_id: str, user_id: str
+        self, api_key: ApiKey | str, task_id: str, user_id: str
     ) -> OperationResult:
         """停止消息生成
 
@@ -310,14 +319,42 @@ class DifyApp:
         """
         return await self.conversation.stop_message(api_key, task_id, user_id)
 
+    async def update_model_config(
+        self, app_id: str, model_config: ModelConfigUpdatePayload
+    ) -> OperationResult:
+        """更新应用的模型配置
+
+        Args:
+            app_id: 应用ID
+            model_config: 模型配置更新数据
+
+        Returns:
+            OperationResult: 操作结果对象
+
+        Raises:
+            ValueError: 当应用ID为空时抛出
+            httpx.HTTPStatusError: 当API请求失败时抛出
+        """
+        if not app_id:
+            raise ValueError("应用ID不能为空")
+
+        # 发送请求更新模型配置
+        response_data = await self.admin_client.post(
+            f"/apps/{app_id}/model-config",
+            json=model_config.model_dump(by_alias=True, exclude_none=True),
+        )
+
+        # 返回操作结果
+        return OperationResult(**response_data)
+
     async def create(
-        self, 
-        name: str, 
-        mode: AppMode|str, 
-        description: str = "", 
-        icon_type: str = "emoji", 
-        icon: str = "🤖", 
-        icon_background: str = "#FFEAD5"
+        self,
+        name: str,
+        mode: AppMode | str,
+        description: str = "",
+        icon_type: str = "emoji",
+        icon: str = "🤖",
+        icon_background: str = "#FFEAD5",
     ) -> App:
         """创建新应用
 
@@ -338,27 +375,24 @@ class DifyApp:
         """
         if not name:
             raise ValueError("应用名称不能为空")
-        
+
         if not mode:
             raise ValueError("应用模式不能为空")
-        
+
         payload = {
             "name": name,
             "mode": mode.value if isinstance(mode, AppMode) else mode,
             "description": description,
             "icon_type": icon_type,
             "icon": icon,
-            "icon_background": icon_background
+            "icon_background": icon_background,
         }
-        
-        response_data = await self.admin_client.post(
-            "/apps",
-            json=payload
-        )
-        
+
+        response_data = await self.admin_client.post("/apps", json=payload)
+
         return App.model_validate(response_data)
+
 
 __all__ = [
     "DifyApp",
 ]
-

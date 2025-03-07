@@ -1166,3 +1166,66 @@ class AppParameters(BaseModel):
     file_upload: FileUploadConfig = Field(
         default=FileUploadConfig(), description="文件上传配置"
     )
+
+
+class ModelInUpdate(BaseModel):
+    """模型更新配置
+
+    Attributes:
+        provider: 模型提供者，如langgenius/openai/openai
+        name: 模型名称，如gpt-3.5-turbo-instruct
+        mode: 模型模式，如completion
+        completion_params: 补全参数配置
+    """
+
+    provider: str = Field(description="模型提供者")
+    name: str = Field(description="模型名称")
+    mode: str = Field(description="模型模式")
+    completion_params: Optional[dict] = Field(default=None, description="补全参数配置")
+
+
+class ModelConfigUpdatePayload(BaseModel):
+    """模型配置更新Payload
+
+    Attributes:
+        pre_prompt: 预设提示
+        prompt_type: 提示类型
+        chat_prompt_config: 对话提示配置
+        completion_prompt_config: 补全提示配置
+        user_input_form: 用户输入表单
+        dataset_query_variable: 数据集查询变量
+        more_like_this: 相似推荐配置
+        opening_statement: 开场白
+        suggested_questions: 建议问题列表
+        sensitive_word_avoidance: 敏感词规避配置
+        speech_to_text: 语音转文本配置
+        text_to_speech: 文字转语音配置
+        file_upload: 文件上传配置
+        suggested_questions_after_answer: 回答后的建议问题配置
+        retriever_resource: 检索资源配置
+        agent_mode: 代理模式配置
+        model: 模型配置
+        dataset_configs: 数据集配置
+    """
+
+    pre_prompt: str = Field(default="", description="预设提示")
+    prompt_type: str = Field(default="simple", description="提示类型")
+    chat_prompt_config: Optional[dict] = Field(default_factory=dict, description="对话提示配置")
+    completion_prompt_config: Optional[dict] = Field(default_factory=dict, description="补全提示配置")
+    user_input_form: Optional[List[dict]] = Field(default_factory=list, description="用户输入表单")
+    dataset_query_variable: Optional[str] = Field(default="", description="数据集查询变量")
+    more_like_this: Optional[dict] = Field(default_factory=dict, description="相似推荐配置")
+    opening_statement: Optional[str] = Field(default="", description="开场白")
+    suggested_questions: Optional[List[str]] = Field(default_factory=list, description="建议问题列表")
+    sensitive_word_avoidance: Optional[dict] = Field(default_factory=dict, description="敏感词规避配置")
+    speech_to_text: Optional[dict] = Field(default_factory=dict, description="语音转文本配置")
+    text_to_speech: Optional[dict] = Field(default_factory=dict, description="文字转语音配置")
+    file_upload: Optional[dict] = Field(default_factory=dict, description="文件上传配置")
+    suggested_questions_after_answer: Optional[dict] = Field(default_factory=dict, description="回答后的建议问题配置")
+    retriever_resource: Optional[dict] = Field(default_factory=dict, description="检索资源配置")
+    agent_mode: Optional[dict] = Field(default_factory=dict, description="代理模式配置")
+    model: ModelInUpdate = Field(default=None, description="模型配置")
+    dataset_configs: Optional[dict] = Field(default_factory=dict, description="数据集配置")
+
+    # Pydantic V2 配置方式
+    model_config = {"populate_by_name": True, "protected_namespaces": ()}
