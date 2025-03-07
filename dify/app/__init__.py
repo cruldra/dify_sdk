@@ -310,6 +310,54 @@ class DifyApp:
         """
         return await self.conversation.stop_message(api_key, task_id, user_id)
 
+    async def create(
+        self, 
+        name: str, 
+        mode: AppMode|str, 
+        description: str = "", 
+        icon_type: str = "emoji", 
+        icon: str = "🤖", 
+        icon_background: str = "#FFEAD5"
+    ) -> App:
+        """创建新应用
+
+        Args:
+            name: 应用名称
+            mode: 应用模式，可选值为chat、agent-chat、workflow、completion
+            description: 应用描述，默认为空字符串
+            icon_type: 图标类型，默认为emoji
+            icon: 图标，默认为🤖
+            icon_background: 图标背景色，默认为#FFEAD5
+
+        Returns:
+            App: 创建的应用对象
+
+        Raises:
+            ValueError: 当应用名称为空或应用模式无效时抛出
+            httpx.HTTPStatusError: 当API请求失败时抛出
+        """
+        if not name:
+            raise ValueError("应用名称不能为空")
+        
+        if not mode:
+            raise ValueError("应用模式不能为空")
+        
+        payload = {
+            "name": name,
+            "mode": mode.value if isinstance(mode, AppMode) else mode,
+            "description": description,
+            "icon_type": icon_type,
+            "icon": icon,
+            "icon_background": icon_background
+        }
+        
+        response_data = await self.admin_client.post(
+            "/apps",
+            json=payload
+        )
+        
+        return App.model_validate(response_data)
+
 __all__ = [
     "DifyApp",
 ]

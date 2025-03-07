@@ -16,25 +16,164 @@ uv pip install dify-sdk
 pip install dify-sdk
 ```
 
-## 基本用法
+## 快速开始
 
 ```python
-from dify import Dify
-
-# 初始化客户端
-dify = Dify(api_key="your_api_key")
-
-# 异步使用示例
 import asyncio
+from dify import DifyClient
 
 async def main():
+    # 初始化客户端
+    client = DifyClient("https://api.dify.ai/v1", "your-api-key")
+    
     # 获取应用列表
-    apps = await dify.app.find_list()
-    print(f"找到 {len(apps.data)} 个应用")
+    apps = await client.app.find_list()
+    print(f"应用总数: {apps.total}")
+    
+    # 创建新应用
+    new_app = await client.app.create(
+        name="我的聊天应用",
+        mode="chat",
+        description="这是一个简单的聊天应用"
+    )
+    print(f"创建应用成功: {new_app.name} (ID: {new_app.id})")
 
-# 运行异步函数
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
+
+## 应用管理
+
+### 创建应用
+
+使用 `create` 方法创建新应用:
+
+```python
+app = await client.app.create(
+    name="我的聊天应用",
+    mode="chat",  # 可选值: chat, agent-chat, workflow, completion
+    description="这是一个简单的聊天应用",
+    icon_type="emoji",  # 默认为 emoji
+    icon="🤖",  # 默认为 🤖
+    icon_background="#FFEAD5"  # 默认为 #FFEAD5
+)
+```
+
+### 获取应用列表
+
+使用 `find_list` 方法获取应用列表:
+
+```python
+apps = await client.app.find_list(
+    page=1,
+    limit=10,
+    mode="chat",  # 可选，按应用模式过滤
+    name="",  # 可选，按名称过滤
+    is_created_by_me=True  # 可选，只返回由我创建的应用
+)
+```
+
+### 获取应用详情
+
+使用 `find_by_id` 方法获取应用详情:
+
+```python
+app = await client.app.find_by_id("app-id")
+```
+
+### 获取应用API密钥
+
+使用 `get_keys` 方法获取应用的API密钥:
+
+```python
+keys = await client.app.get_keys("app-id")
+```
+
+### 创建API密钥
+
+使用 `create_api_key` 方法为应用创建新的API密钥:
+
+```python
+key = await client.app.create_api_key("app-id")
+```
+
+### 删除API密钥
+
+使用 `delete_api_key` 方法删除应用的API密钥:
+
+```python
+result = await client.app.delete_api_key("app-id", "key-id")
+```
+
+## 对话
+
+### 聊天
+
+使用 `chat` 方法与应用进行对话:
+
+```python
+async for event in client.app.chat(
+    "api-key",
+    {
+        "query": "你好",
+        "user": "user-id",
+        "response_mode": "streaming"
+    }
+):
+    print(event)
+```
+
+### 补全
+
+使用 `completion` 方法获取补全结果:
+
+```python
+async for event in client.app.completion(
+    "api-key",
+    {
+        "inputs": {},
+        "user": "user-id",
+        "response_mode": "streaming"
+    }
+):
+    print(event)
+```
+
+### 运行工作流
+
+使用 `run` 方法运行工作流:
+
+```python
+async for event in client.app.run(
+    "api-key",
+    {
+        "inputs": {},
+        "user": "user-id",
+        "response_mode": "streaming"
+    }
+):
+    print(event)
+```
+
+### 获取应用参数
+
+使用 `get_parameters` 方法获取应用参数:
+
+```python
+parameters = await client.app.get_parameters("api-key")
+```
+
+### 停止消息生成
+
+使用 `stop_message` 方法停止消息生成:
+
+```python
+result = await client.app.stop_message("api-key", "task-id", "user-id")
+```
+
+## 更多示例
+
+查看 `examples` 目录获取更多使用示例。
 
 ## 功能
 
