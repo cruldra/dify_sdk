@@ -11,6 +11,7 @@ from .schemas import (
     RunWorkflowPayloads,
     AppMode,
     AppParameters,
+    OperationResult,
 )
 from .utils import parse_event
 from ..http import AdminClient
@@ -143,7 +144,7 @@ class DifyApp:
         return True
 
     async def chat(
-            self, key: ApiKey, payloads: ChatPayloads
+            self, key: ApiKey|str, payloads: ChatPayloads
     ) -> AsyncGenerator[ConversationEvent, None]:
         """和应用进行对话,适用`App.mode`为`chat`的应用.
 
@@ -160,7 +161,7 @@ class DifyApp:
         """
         if not key:
             raise ValueError("应用密钥不能为空")
-        api_client = self.admin_client.create_api_client(key.token)
+        api_client = self.admin_client.create_api_client(key.token if isinstance(key, ApiKey) else key)
         # 准备请求数据
         request_data = payloads.model_dump(exclude_none=True)
 
@@ -182,7 +183,7 @@ class DifyApp:
                     yield event
 
     async def completion(
-            self, api_key: ApiKey, payloads: RunWorkflowPayloads
+            self, api_key: ApiKey|str, payloads: RunWorkflowPayloads
     ) -> AsyncGenerator[ConversationEvent, None]:
         """使用应用进行补全,适用`App.mode`为`completion`的应用.
 
@@ -200,7 +201,7 @@ class DifyApp:
         if not api_key:
             raise ValueError("API密钥不能为空")
 
-        api_client = self.admin_client.create_api_client(api_key.token)
+        api_client = self.admin_client.create_api_client(api_key.token if isinstance(api_key, ApiKey) else api_key)
 
         # 准备请求数据
         request_data = payloads.model_dump(exclude_none=True)
@@ -227,7 +228,7 @@ class DifyApp:
                     yield event
 
     async def run(
-            self, api_key: ApiKey, payloads: RunWorkflowPayloads
+            self, api_key: ApiKey|str, payloads: RunWorkflowPayloads
     ) -> AsyncGenerator[ConversationEvent, None]:
         """使用应用运行工作流,适用`App.mode`为`workflow`的应用.
 
@@ -245,7 +246,7 @@ class DifyApp:
         if not api_key:
             raise ValueError("API密钥不能为空")
 
-        api_client = self.admin_client.create_api_client(api_key.token)
+        api_client = self.admin_client.create_api_client(api_key.token if isinstance(api_key, ApiKey) else api_key)
 
         # 准备请求数据
         request_data = payloads.model_dump(exclude_none=True)
@@ -270,7 +271,7 @@ class DifyApp:
                     event = parse_event(event_data)
                     yield event
 
-    async def get_parameters(self, api_key: ApiKey) -> AppParameters:
+    async def get_parameters(self, api_key: ApiKey|str) -> AppParameters:
         """获取应用参数配置
 
         Args:
@@ -280,7 +281,7 @@ class DifyApp:
             AppParameters: 应用参数配置对象
         """
         # 处理API密钥参数
-        api_client = self.admin_client.create_api_client(api_key.token)
+        api_client = self.admin_client.create_api_client(api_key.token if isinstance(api_key, ApiKey) else api_key)
         # 发送请求获取应用参数
         response = await  api_client.get(
             f"/parameters",
@@ -289,3 +290,27 @@ class DifyApp:
 
         # 解析响应数据并返回AppParameters对象
         return AppParameters.model_validate(response)
+
+    async def stop_message(
+        self, api_key: ApiKey|str, task_id: str, user_id: str
+    ) -> OperationResult:
+        """停止消息生成
+
+        Args:
+            api_key: API密钥
+            task_id: 任务ID
+            user_id: 用户ID
+
+        Returns:
+            OperationResult: 操作结果对象
+
+        Raises:
+            ValueError: 当API密钥、任务ID或用户ID为空时抛出
+            httpx.HTTPStatusError: 当API请求失败时抛出
+        """
+        return await self.conversation.stop_message(api_key, task_id, user_id)
+
+__all__ = [
+    "DifyApp",
+]
+

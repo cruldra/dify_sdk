@@ -16,7 +16,7 @@ class DifyConversation:
         self.admin_client = admin_client
 
     async def find_list(
-        self, api_key: ApiKey, payloads: ConversationListQueryPayloads
+        self, api_key: ApiKey|str, payloads: ConversationListQueryPayloads
     ) -> ConversationList:
         """获取对话列表
 
@@ -34,7 +34,7 @@ class DifyConversation:
         if not api_key:
             raise ValueError("API密钥不能为空")
 
-        api_client = self.admin_client.create_api_client(api_key.token)
+        api_client = self.admin_client.create_api_client(api_key.token if isinstance(api_key, ApiKey) else api_key)
 
         # 准备请求参数
         params = payloads.model_dump(exclude_none=True)
@@ -48,7 +48,7 @@ class DifyConversation:
         return ConversationList.model_validate(response_data)
 
     async def get_messages(
-        self, api_key: ApiKey, payloads: MessageListQueryPayloads
+        self, api_key: ApiKey|str, payloads: MessageListQueryPayloads
     ) -> MessageList:
         """获取消息列表
 
@@ -66,7 +66,7 @@ class DifyConversation:
         if not api_key:
             raise ValueError("API密钥不能为空")
 
-        api_client = self.admin_client.create_api_client(api_key.token)
+        api_client = self.admin_client.create_api_client(api_key.token if isinstance(api_key, ApiKey) else api_key)
 
         # 准备请求参数
         params = payloads.model_dump(exclude_none=True)
@@ -80,7 +80,7 @@ class DifyConversation:
         return MessageList.model_validate(response_data)
 
     async def delete(
-        self, api_key: ApiKey, conversation_id: str, user_id: str
+        self, api_key: ApiKey|str, conversation_id: str, user_id: str
     ) -> OperationResult:
         """删除Dify会话
 
@@ -105,19 +105,19 @@ class DifyConversation:
         if not user_id:
             raise ValueError("用户ID不能为空")
 
-        api_client = self.admin_client.create_api_client(api_key.token)
+        api_client = self.admin_client.create_api_client(api_key.token if isinstance(api_key, ApiKey) else api_key)
 
         # 发送删除请求
         response_data = await api_client.delete(
             f"/conversations/{conversation_id}",
-            params={"user": user_id},
+            content={"user": user_id},
         )
 
         return OperationResult(result="success")
 
     async def rename(
         self,
-        api_key: ApiKey,
+        api_key: ApiKey|str,
         conversation_id: str,
         payloads: ConversationRenamePayloads,
     ) -> Conversation:
@@ -141,7 +141,7 @@ class DifyConversation:
         if not conversation_id:
             raise ValueError("会话ID不能为空")
 
-        api_client = self.admin_client.create_api_client(api_key.token)
+        api_client = self.admin_client.create_api_client(api_key.token if isinstance(api_key, ApiKey) else api_key)
 
         # 准备请求参数
         json_data = payloads.model_dump(exclude_none=True)
@@ -156,7 +156,7 @@ class DifyConversation:
 
     async def submit_feedback(
         self,
-        api_key: ApiKey,
+        api_key: ApiKey|str,
         message_id: str,
         payloads: MessageFeedbackPayloads,
     ) -> OperationResult:
@@ -180,7 +180,7 @@ class DifyConversation:
         if not message_id:
             raise ValueError("消息ID不能为空")
 
-        api_client = self.admin_client.create_api_client(api_key.token)
+        api_client = self.admin_client.create_api_client(api_key.token if isinstance(api_key, ApiKey) else api_key)
 
         # 准备请求参数
         json_data = payloads.model_dump(exclude_none=True)
@@ -192,3 +192,50 @@ class DifyConversation:
         )
 
         return OperationResult.model_validate(response_data)
+
+    async def stop_message(
+        self,
+        api_key: ApiKey|str,
+        task_id: str,
+        user_id: str,
+    ) -> OperationResult:
+        """停止消息生成
+
+        Args:
+            api_key: API密钥
+            task_id: 任务ID
+            user_id: 用户ID
+
+        Returns:
+            OperationResult: 操作结果对象
+
+        Raises:
+            ValueError: 当API密钥为空时抛出
+            httpx.HTTPStatusError: 当API请求失败时抛出
+        """
+        if not api_key:
+            raise ValueError("API密钥不能为空")
+
+        if not task_id:
+            raise ValueError("任务ID不能为空")
+
+        if not user_id:
+            raise ValueError("用户ID不能为空")
+
+        api_client = self.admin_client.create_api_client(api_key.token if isinstance(api_key, ApiKey) else api_key)
+
+        # 准备请求参数
+        json_data = {"user": user_id}
+
+        # 发送请求停止消息生成
+        response_data = await api_client.post(
+            f"/chat-messages/{task_id}/stop",
+            json=json_data,
+        )
+
+        return OperationResult.model_validate(response_data)
+
+__all__ = [
+    "DifyConversation",
+]
+

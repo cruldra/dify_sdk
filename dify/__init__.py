@@ -14,4 +14,4 @@ class Dify(object):
 
 
 __version__ = "0.1.0"
-__all__ = ["Dify"]
+__all__ = ["Dify", "AdminClient"]

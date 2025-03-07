@@ -10,6 +10,7 @@
 - 完整的测试覆盖
 - 健壮的错误处理和日志记录
 - **新增：** 支持Dify API的事件处理，包括聊天消息、Agent消息等多种事件类型
+- **新增：** 支持停止消息生成功能，可以中断正在进行的AI响应
 
 ## 安装
 
@@ -68,6 +69,38 @@ if event.event == ConversationEventType.MESSAGE:
 elif event.event == ConversationEventType.ERROR:
     print(f"发生错误: {event.message}")
 ```
+
+### 停止消息生成
+
+```python
+from dify import DifyClient
+from dify.app.schemas import ApiKey
+
+# 创建客户端
+client = DifyClient()
+
+# 停止正在生成的消息
+async def stop_message_example():
+    # 创建API密钥对象
+    api_key = ApiKey(
+        id="",
+        type="api",
+        token="your_api_key_here",
+        last_used_at=0,
+        created_at=0,
+    )
+    
+    # 调用stop_message方法停止消息生成
+    result = await client.app.stop_message(
+        api_key=api_key,
+        task_id="task_id_here",
+        user_id="user_id_here"
+    )
+    
+    print(f"停止结果: {result.result}")
+```
+
+更详细的示例请参考 `examples/stop_message_example.py`。
 
 ## 开发
 
@@ -179,10 +212,18 @@ dify_sdk/
 │   └── test_event_schemas.py # 事件模型测试
 └── examples/                # 示例目录
     ├── basic_usage.py       # 基本用法示例
-    └── event_example.py     # 事件处理示例
+    ├── event_example.py     # 事件处理示例
+    └── stop_message_example.py # 停止消息生成示例
 ```
 
 ## 最近更新
+
+### 1.2.0 (2023-03-05)
+
+- 新增：支持停止消息生成功能
+  - 添加了`stop_message`方法，用于中断正在进行的AI响应
+  - 提供了详细的示例代码和测试用例
+  - 完善了文档说明
 
 ### 1.1.0 (2023-03-04)
 

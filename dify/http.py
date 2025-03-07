@@ -88,7 +88,7 @@ class HttpClient:
         method: str = "POST",
         json: dict = None,
     ) -> AsyncGenerator[bytes, None]:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=600) as client:
             merged_headers = await self.__merge_headers__(headers)
 
             async with client.stream(

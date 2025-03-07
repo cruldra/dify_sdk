@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from dify.app import DifyApp
-from dify.app.schemas import ApiKey, ConversationList, ConversationListQueryPayloads, SortBy
+from dify.app.schemas import ApiKey, ConversationList, ConversationListQueryPayloads, SortBy, OperationResult
 
 
 class TestConversations(unittest.TestCase):
@@ -149,6 +149,53 @@ class TestConversations(unittest.TestCase):
             await self.app.fetch_conversations(None, query_params)
 
         self.assertEqual(str(context.exception), "API密钥不能为空")
+
+    @pytest.mark.asyncio
+    async def test_stop_message_with_valid_params(self):
+        """测试使用有效参数停止消息生成"""
+        # 准备测试数据
+        mock_response = {"result": "success"}
+        self.api_client.post.return_value = mock_response
+
+        # 调用测试方法
+        result = await self.app.stop_message(self.api_key, "task_123", "user_123")
+
+        # 验证结果
+        self.assertIsInstance(result, OperationResult)
+        self.assertEqual(result.result, "success")
+
+        # 验证API调用
+        self.api_client.post.assert_called_once_with(
+            "/chat-messages/task_123/stop",
+            json={"user": "user_123"},
+        )
+
+    @pytest.mark.asyncio
+    async def test_stop_message_with_empty_api_key(self):
+        """测试使用空API密钥停止消息生成"""
+        # 调用测试方法并验证异常
+        with self.assertRaises(ValueError) as context:
+            await self.app.stop_message(None, "task_123", "user_123")
+
+        self.assertEqual(str(context.exception), "API密钥不能为空")
+
+    @pytest.mark.asyncio
+    async def test_stop_message_with_empty_task_id(self):
+        """测试使用空任务ID停止消息生成"""
+        # 调用测试方法并验证异常
+        with self.assertRaises(ValueError) as context:
+            await self.app.stop_message(self.api_key, "", "user_123")
+
+        self.assertEqual(str(context.exception), "任务ID不能为空")
+
+    @pytest.mark.asyncio
+    async def test_stop_message_with_empty_user_id(self):
+        """测试使用空用户ID停止消息生成"""
+        # 调用测试方法并验证异常
+        with self.assertRaises(ValueError) as context:
+            await self.app.stop_message(self.api_key, "task_123", "")
+
+        self.assertEqual(str(context.exception), "用户ID不能为空")
 
 
 if __name__ == "__main__":

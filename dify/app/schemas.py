@@ -119,8 +119,6 @@ class App(BaseModel):
     updated_by: Optional[str] = Field(default=None, description="更新者")
     updated_at: Optional[datetime] = Field(default=None, description="更新时间")
     tags: Optional[List[Tag]] = Field(default_factory=list, description="标签")
-    monthly_price: Optional[float] = Field(default=None, description="月付价格")
-    yearly_price: Optional[float] = Field(default=None, description="年付价格")
     # Pydantic V2 配置方式
     model_config = {
         "populate_by_name": True,
@@ -210,12 +208,12 @@ class ChatPayloads(BaseModel):
         auto_generate_name (bool): （选填）自动生成标题，默认 true。若设置为 false，则可通过调用会话重命名接口并设置 auto_generate 为 true 实现异步生成标题
     """
 
-    query: Optional[str] = Field(default=None, description="用户输入/提问内容")
+    query: str = Field(..., description="用户输入/提问内容")
     inputs: Optional[dict] = Field(
         default_factory=dict, description="额外的输入参数配置"
     )
     response_mode: Optional[str] = Field(default="streaming", description="响应模式")
-    user: Optional[str] = Field(default=None, description="用户标识")
+    user: str = Field(..., description="用户标识")
     conversation_id: Optional[str] = Field(default=None, description="对话ID")
     files: Optional[List[UploadFile]] = Field(
         default_factory=list, description="上传的文件列表"
@@ -332,11 +330,11 @@ class ErrorEvent(BaseModel):
     event: Literal[ConversationEventType.ERROR] = Field(
         default=ConversationEventType.ERROR, description="事件类型"
     )
-    task_id: str = Field(..., description="任务ID")
-    message_id: str = Field(..., description="消息ID")
-    status: int = Field(..., description="HTTP状态码")
-    code: str = Field(..., description="错误代码")
-    message: str = Field(..., description="错误信息")
+    task_id: Optional[str] = Field(default=None, description="任务ID")
+    message_id: Optional[str] = Field(default=None, description="消息ID")
+    status: Optional[int] = Field(default=None, description="HTTP状态码")
+    code: Optional[str] = Field(default=None, description="错误代码")
+    message: Optional[str] = Field(default=None, description="错误信息")
 
     # Pydantic V2 配置方式
     model_config = {
