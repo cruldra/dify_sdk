@@ -1,6 +1,8 @@
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
+from dify.tag import Tag
+
 
 class KeywordSetting(BaseModel):
     """关键词权重设置Schema
@@ -330,7 +332,27 @@ class DataSetInList(BaseModel):
     id: str = Field(description="数据集ID")
     name: str = Field(description="数据集名称")
     description: Optional[str] = Field(default=None, description="数据集描述")
-    tags: Optional[List[str]] = Field(default=None, description="数据集标签")
+    tags: Optional[List[Tag]] = Field(default=None, description="数据集标签")
+    # Pydantic V2 配置
+    model_config = {
+        "populate_by_name": True,
+        "protected_namespaces": (),
+    }
+
+
+class DataSetList(BaseModel):
+    """知识库列表Schema
+
+    Attributes:
+        data: 知识库列表
+        total: 知识库总数
+        has_more: 是否有更多知识库
+    """
+
+    data: List[DataSetInList] = Field(default_factory=list, description="知识库列表")
+    total: int = Field(default=0, description="知识库总数")
+    has_more: bool = Field(default=False, description="是否有更多知识库")
+
     # Pydantic V2 配置
     model_config = {
         "populate_by_name": True,
@@ -353,4 +375,5 @@ __all__ = [
     "DataSetInList",
     "Document",
     "DataSetInCreate",
+    "DataSetList",
 ]

@@ -5,7 +5,8 @@
 ## 示例列表
 
 1. [创建知识库](./create.py) - 展示如何创建Dify知识库
-2. [删除知识库](./delete.py) - 展示如何删除Dify知识库
+2. [查询知识库列表](./find_list.py) - 展示如何查询Dify知识库列表
+3. [删除知识库](./delete.py) - 展示如何删除Dify知识库
 
 ## 使用方法
 
@@ -27,6 +28,9 @@ DIFY_BASE_URL=your_dify_base_url  # 例如：https://api.dify.ai 或您的自托
 # 创建知识库示例
 python examples/dataset/create.py
 
+# 查询知识库列表示例
+python examples/dataset/find_list.py
+
 # 删除知识库示例
 python examples/dataset/delete.py
 ```
@@ -37,6 +41,12 @@ python examples/dataset/delete.py
 
 - `create(payload)` - 创建新的知识库
   - `payload`: 知识库创建参数，类型为`DataSetCreatePayloads`
+
+- `find_list(page, limit, include_all, tag_ids)` - 查询知识库列表
+  - `page`: 页码，默认为1
+  - `limit`: 每页数量，默认为30
+  - `include_all`: 是否包含所有知识库，默认为False
+  - `tag_ids`: 标签ID列表，用于筛选特定标签的知识库，默认为None
 
 - `delete(dataset_id)` - 删除指定ID的知识库
   - `dataset_id`: 要删除的知识库ID
@@ -71,6 +81,34 @@ create_payload = DataSetCreatePayloads(
 # 创建知识库
 result = await dify_dataset.create(create_payload)
 print(f"知识库ID: {result.dataset.id}")
+```
+
+### 查询知识库列表
+
+```python
+# 初始化AdminClient和DifyDataset
+admin_client = AdminClient(BASE_URL, API_KEY)
+dify_dataset = DifyDataset(admin_client)
+
+# 查询所有知识库
+dataset_list = await dify_dataset.find_list()
+print(f"总知识库数: {dataset_list.total}")
+print(f"当前页知识库数: {len(dataset_list.data)}")
+
+# 分页查询知识库
+page = 1
+limit = 10
+dataset_list = await dify_dataset.find_list(page=page, limit=limit)
+print(f"第{page}页（每页{limit}条）知识库数: {len(dataset_list.data)}")
+
+# 根据标签查询知识库
+tag_ids = ["your_tag_id"]
+dataset_list = await dify_dataset.find_list(tag_ids=tag_ids)
+print(f"标签筛选后的知识库数: {len(dataset_list.data)}")
+
+# 查询所有知识库（包括共享的）
+dataset_list = await dify_dataset.find_list(include_all=True)
+print(f"所有知识库数: {dataset_list.total}")
 ```
 
 ### 删除知识库

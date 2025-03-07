@@ -15,7 +15,7 @@ class Tag(BaseModel):
     id: str = Field(..., description="标签唯一标识")
     name: str = Field(..., description="标签名称")
     type: TagType = Field(..., description="标签类型")
-    binding_count: int = Field(..., description="绑定数量")
+    binding_count: Optional[int] = Field(default=0, description="绑定数量")
 
     # Pydantic V2 配置
     model_config = {
