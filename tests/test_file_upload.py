@@ -8,7 +8,7 @@ import pytest
 from unittest.mock import AsyncMock, patch, mock_open
 
 from dify.file import DifyFile
-from dify.file.schemas import DifyFile
+from dify.file.schemas import UploadFile
 
 
 @pytest.mark.asyncio
@@ -32,7 +32,7 @@ async def test_upload():
     mock_admin_client.upload.return_value = mock_response
     
     # 创建DifyFile实例
-    dify_file = DifyFile(mock_admin_client)
+    dify_file = UploadFile(mock_admin_client)
     
     # 创建临时文件用于测试
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
@@ -44,7 +44,7 @@ async def test_upload():
         result = await dify_file.upload(temp_file_path)
         
         # 验证结果
-        assert isinstance(result, DifyFile)
+        assert isinstance(result, UploadFile)
         assert result.id == "test_file_id"
         assert result.name == "test.txt"
         assert result.size == 100
@@ -85,7 +85,7 @@ async def test_upload_with_custom_source():
     mock_admin_client.upload.return_value = mock_response
     
     # 创建DifyFile实例
-    dify_file = DifyFile(mock_admin_client)
+    dify_file = UploadFile(mock_admin_client)
     
     # 创建临时文件用于测试
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
@@ -98,7 +98,7 @@ async def test_upload_with_custom_source():
         result = await dify_file.upload(temp_file_path, source=custom_source)
         
         # 验证结果
-        assert isinstance(result, DifyFile)
+        assert isinstance(result, UploadFile)
         
         # 验证调用了正确的API路径和参数
         mock_admin_client.upload.assert_called_once()
@@ -117,7 +117,7 @@ async def test_upload_empty_file_path():
     mock_admin_client = AsyncMock()
     
     # 创建DifyFile实例
-    dify_file = DifyFile(mock_admin_client)
+    dify_file = UploadFile(mock_admin_client)
     
     # 调用upload方法，应该抛出ValueError
     with pytest.raises(ValueError, match="文件路径不能为空"):
@@ -131,7 +131,7 @@ async def test_upload_non_existent_file():
     mock_admin_client = AsyncMock()
     
     # 创建DifyFile实例
-    dify_file = DifyFile(mock_admin_client)
+    dify_file = UploadFile(mock_admin_client)
     
     # 调用upload方法，应该抛出ValueError
     non_existent_file = "non_existent_file.txt"

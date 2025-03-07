@@ -3,14 +3,14 @@ from typing import Optional
 from pathlib import Path
 
 from dify.http import AdminClient
-from .schemas import DifyFile
+from .schemas import UploadFile
 
 
 class DifyFile:
     def __init__(self, admin_client: AdminClient) -> None:
         self.admin_client = admin_client
 
-    async def upload(self, file_path: str, source: str = "datasets") -> DifyFile:
+    async def upload(self, file_path: str, source: str = "datasets") -> UploadFile:
         """上传文件到Dify平台
 
         Args:
@@ -45,7 +45,7 @@ class DifyFile:
             )
 
         # 返回文件上传响应对象
-        return DifyFile(**response_data)
+        return UploadFile(**response_data)
 
 
 __all__ = ["DifyFile"]

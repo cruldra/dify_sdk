@@ -2,7 +2,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 
-class DifyFile(BaseModel):
+class UploadFile(BaseModel):
     """文件上传响应Schema
 
     Attributes:
@@ -30,4 +30,4 @@ class DifyFile(BaseModel):
     }
 
 
-__all__ = ["DifyFile"] 
+__all__ = ["UploadFile"] 
