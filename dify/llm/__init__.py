@@ -2,7 +2,7 @@ from dify.http import AdminClient
 from .schemas import LLM, LLMList
 
 
-class LLM:
+class DifyLLM:
     def __init__(self, admin_client: AdminClient) -> None:
         self.admin_client = admin_client
 
@@ -11,3 +11,6 @@ class LLM:
             "/workspaces/current/models/model-types/llm",
         )
         return LLMList(**response_data)
+
+
+__all__ = ["DifyLLM"]

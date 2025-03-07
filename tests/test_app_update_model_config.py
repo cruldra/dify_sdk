@@ -6,7 +6,7 @@ import pytest
 from unittest.mock import AsyncMock, patch
 
 from dify.app import DifyApp
-from dify.app.schemas import ModelConfigUpdatePayload, ModelInUpdate, OperationResult
+from dify.app.schemas import ModelConfigUpdatePayloads, ModelInUpdate, OperationResult
 
 
 @pytest.mark.asyncio
@@ -25,7 +25,7 @@ async def test_update_model_config():
     dify_app = DifyApp(mock_admin_client)
     
     # 创建模型配置更新对象
-    model_config = ModelConfigUpdatePayload(
+    model_config = ModelConfigUpdatePayloads(
         pre_prompt="测试预设提示词",
         prompt_type="simple",
         opening_statement="测试开场白",
@@ -72,7 +72,7 @@ async def test_update_model_config_empty_app_id():
     dify_app = DifyApp(mock_admin_client)
     
     # 创建模型配置更新对象
-    model_config = ModelConfigUpdatePayload(
+    model_config = ModelConfigUpdatePayloads(
         pre_prompt="测试预设提示词",
         prompt_type="simple"
     )

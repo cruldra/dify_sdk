@@ -1184,7 +1184,7 @@ class ModelInUpdate(BaseModel):
     completion_params: Optional[dict] = Field(default=None, description="补全参数配置")
 
 
-class ModelConfigUpdatePayload(BaseModel):
+class ModelConfigUpdatePayloads(BaseModel):
     """模型配置更新Payload
 
     Attributes:

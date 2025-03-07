@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 from dify.http import AdminClient
 from dify.app import DifyApp
-from dify.app.schemas import ModelConfigUpdatePayload, ModelInUpdate
+from dify.app.schemas import ModelConfigUpdatePayloads, ModelInUpdate
 
 
 # 加载环境变量
@@ -45,7 +45,7 @@ async def main():
     print(f"1. 准备更新应用模型配置 (ID: {app_id}):")
     
     # 创建模型配置更新对象
-    model_config = ModelConfigUpdatePayload(
+    model_config = ModelConfigUpdatePayloads(
         pre_prompt="这是一个更新后的预设提示词",
         prompt_type="simple",
         opening_statement="欢迎使用更新后的应用！",
