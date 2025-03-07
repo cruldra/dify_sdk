@@ -1,5 +1,5 @@
 import json
-from typing import Any, AsyncGenerator
+from typing import Any, AsyncGenerator, Dict, BinaryIO
 
 import httpx
 
@@ -48,6 +48,41 @@ class HttpClient:
             if response.is_error:
                 raise DifyException(
                     f"请求失败，状态码: {response.status_code}, 错误信息: {response.text}"
+                )
+            return response.json()
+
+    async def upload(
+            self, url: str, files: Dict[str, tuple[str, BinaryIO]], params: dict = None, headers: dict = None
+    ) -> dict[str, Any]:
+        """上传文件
+
+        Args:
+            url: API路径
+            files: 文件字典，格式为 {"file": (filename, file_object)}
+            params: 查询参数
+            headers: 请求头
+
+        Returns:
+            dict: API响应数据
+
+        Raises:
+            DifyException: 当API请求失败时抛出
+        """
+        async with httpx.AsyncClient() as client:
+            # 上传文件时不设置Content-Type，让httpx自动设置为multipart/form-data
+            auth_headers = {"Authorization": f"Bearer {self.key}"}
+            if headers:
+                auth_headers.update(headers)
+
+            response = await client.post(
+                self.base_url + url, 
+                files=files, 
+                params=params, 
+                headers=auth_headers
+            )
+            if response.is_error:
+                raise DifyException(
+                    f"文件上传失败，状态码: {response.status_code}, 错误信息: {response.text}"
                 )
             return response.json()
 
