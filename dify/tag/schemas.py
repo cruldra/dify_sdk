@@ -22,3 +22,15 @@ class Tag(BaseModel):
         "populate_by_name": True,
         "protected_namespaces": (),
     }
+class BindingPayloads(BaseModel):
+    """标签绑定请求体"""
+    
+    tag_ids: List[str] = Field(..., description="要绑定的标签ID列表")
+    target_id: str = Field(..., description="目标对象ID")
+    type: TagType = Field(..., description="标签类型")
+
+    # Pydantic V2 配置
+    model_config = {
+        "populate_by_name": True,
+        "protected_namespaces": (),
+    }

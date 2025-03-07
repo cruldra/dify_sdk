@@ -6,7 +6,8 @@
 
 1. [获取标签列表](./list.py) - 展示如何获取Dify标签列表
 2. [创建标签](./create.py) - 展示如何创建Dify标签
-3. [删除标签](./delete.py) - 展示如何删除Dify标签
+3. [绑定标签](./bind.py) - 展示如何将标签绑定到目标对象
+4. [删除标签](./delete.py) - 展示如何删除Dify标签
 
 ## 使用方法
 
@@ -31,6 +32,9 @@ python examples/tag/list.py
 # 创建标签示例
 python examples/tag/create.py
 
+# 绑定标签示例
+python examples/tag/bind.py
+
 # 删除标签示例
 python examples/tag/delete.py
 ```
@@ -45,6 +49,9 @@ python examples/tag/delete.py
 - `create(name, type)` - 创建新标签
   - `name`: 标签名称
   - `type`: 标签类型，类型为`TagType`枚举，可选值包括`TagType.APP`（应用标签）和`TagType.KNOWLEDGE`（知识库标签）
+
+- `bind(payload)` - 绑定标签到目标对象
+  - `payload`: 标签绑定参数，类型为`BindingPayloads`，包含标签ID列表、目标对象ID和标签类型
 
 - `delete(tag_id)` - 删除指定ID的标签
   - `tag_id`: 要删除的标签ID
@@ -91,6 +98,31 @@ print(f"创建成功! 标签ID: {app_tag.id}")
 # 创建知识库标签
 knowledge_tag = await dify_tag.create("测试知识库标签", TagType.KNOWLEDGE)
 print(f"创建成功! 标签ID: {knowledge_tag.id}")
+```
+
+### 绑定标签
+
+```python
+from dify.tag.schemas import TagType, BindingPayloads
+
+# 初始化AdminClient和DifyTag
+admin_client = AdminClient(BASE_URL, API_KEY)
+dify_tag = DifyTag(admin_client)
+
+# 创建绑定参数
+binding_payload = BindingPayloads(
+    tag_ids=["your_tag_id"],
+    target_id="your_dataset_id",
+    type=TagType.KNOWLEDGE
+)
+
+# 绑定标签
+try:
+    result = await dify_tag.bind(binding_payload)
+    if result:
+        print("标签绑定成功")
+except Exception as e:
+    print(f"绑定标签时出错: {e}")
 ```
 
 ### 删除标签
