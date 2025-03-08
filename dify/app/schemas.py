@@ -1182,6 +1182,54 @@ class ModelInUpdate(BaseModel):
     name: str = Field(description="模型名称")
     mode: str = Field(description="模型模式")
     completion_params: Optional[dict] = Field(default=None, description="补全参数配置")
+class Tool(BaseModel):
+    """工具配置
+
+    Attributes:
+        provider_id: 提供者ID
+        provider_type: 提供者类型
+        provider_name: 提供者名称
+        tool_name: 工具名称
+        tool_label: 工具标签
+        tool_parameters: 工具参数配置
+        notAuthor: 是否非作者
+        enabled: 是否启用
+    """
+
+    provider_id: str = Field(description="提供者ID")
+    provider_type: str = Field(description="提供者类型")
+    provider_name: str = Field(description="提供者名称")
+    tool_name: str = Field(description="工具名称")
+    tool_label: str = Field(description="工具标签")
+    tool_parameters: dict = Field(default_factory=dict, description="工具参数配置")
+    notAuthor: bool = Field(default=False, description="是否非作者")
+    enabled: bool = Field(default=True, description="是否启用")
+
+    # Pydantic V2 配置
+    model_config = {
+        "populate_by_name": True,
+        "protected_namespaces": (),
+    }
+class AgentMode(BaseModel):
+    """代理模式配置
+
+    Attributes:
+        max_iteration: 最大迭代次数
+        enabled: 是否启用
+        tools: 工具列表
+        strategy: 策略类型
+    """
+
+    max_iteration: int = Field(default=5, description="最大迭代次数")
+    enabled: bool = Field(default=True, description="是否启用")
+    tools: List[Tool] = Field(default_factory=list, description="工具列表")
+    strategy: str = Field(default="react", description="策略类型")
+
+    # Pydantic V2 配置
+    model_config = {
+        "populate_by_name": True,
+        "protected_namespaces": (),
+    }
 
 
 class ModelConfigUpdatePayloads(BaseModel):
@@ -1223,7 +1271,7 @@ class ModelConfigUpdatePayloads(BaseModel):
     file_upload: Optional[dict] = Field(default_factory=dict, description="文件上传配置")
     suggested_questions_after_answer: Optional[dict] = Field(default_factory=dict, description="回答后的建议问题配置")
     retriever_resource: Optional[dict] = Field(default_factory=dict, description="检索资源配置")
-    agent_mode: Optional[dict] = Field(default_factory=dict, description="代理模式配置")
+    agent_mode: Optional[AgentMode] = Field(default=AgentMode(), description="代理模式配置")
     model: ModelInUpdate = Field(default=None, description="模型配置")
     dataset_configs: Optional[dict] = Field(default_factory=dict, description="数据集配置")
 
