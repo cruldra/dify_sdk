@@ -1068,28 +1068,30 @@ class SelectInput(BaseModel):
     options: List[str] = Field(default_factory=list, description="选项值列表")
 
 
+class Image(BaseModel):
+    """图片设置
+
+    Attributes:
+        enabled: 是否开启
+        number_limits: 图片数量限制，默认3
+        transfer_methods: 传递方式列表，remote_url, local_file，必选一个
+    """
+
+    enabled: bool = Field(default=False, description="是否开启")
+    number_limits: int = Field(default=3, description="图片数量限制，默认3")
+    transfer_methods: List[str] = Field(
+        default_factory=list,
+        description="传递方式列表，remote_url, local_file，必选一个",
+    )
+    detail: Optional[str] = Field(default="high", description="图片详情")
+
+
 class FileUploadConfig(BaseModel):
     """文件上传配置
 
     Attributes:
         image: 图片设置
     """
-
-    class Image(BaseModel):
-        """图片设置
-
-        Attributes:
-            enabled: 是否开启
-            number_limits: 图片数量限制，默认3
-            transfer_methods: 传递方式列表，remote_url, local_file，必选一个
-        """
-
-        enabled: bool = Field(default=False, description="是否开启")
-        number_limits: int = Field(default=3, description="图片数量限制，默认3")
-        transfer_methods: List[str] = Field(
-            default_factory=list,
-            description="传递方式列表，remote_url, local_file，必选一个",
-        )
 
     image: Image = Field(default_factory=Image, description="图片设置")
 
@@ -1182,6 +1184,8 @@ class ModelInUpdate(BaseModel):
     name: str = Field(description="模型名称")
     mode: str = Field(description="模型模式")
     completion_params: Optional[dict] = Field(default=None, description="补全参数配置")
+
+
 class Tool(BaseModel):
     """工具配置
 
@@ -1210,6 +1214,8 @@ class Tool(BaseModel):
         "populate_by_name": True,
         "protected_namespaces": (),
     }
+
+
 class AgentMode(BaseModel):
     """代理模式配置
 
@@ -1230,6 +1236,24 @@ class AgentMode(BaseModel):
         "populate_by_name": True,
         "protected_namespaces": (),
     }
+
+
+class FileUploadInModelConfig(BaseModel):
+    image: Image = Field(
+        default=Image(),
+        description="图片上传配置，包含细节、启用状态、数量限制和传输方式",
+    )
+    enabled: bool = Field(default=False, description="是否启用文件上传功能")
+    allowed_file_types: List[str] = Field(
+        default_factory=list, description="允许上传的文件类型"
+    )
+    allowed_file_extensions: List[str] = Field(
+        default_factory=list, description="允许上传的文件扩展名"
+    )
+    allowed_file_upload_methods: List[str] = Field(
+        default_factory=list, description="允许的文件上传方式"
+    )
+    number_limits: int = Field(default=3, description="文件上传数量限制")
 
 
 class ModelConfigUpdatePayloads(BaseModel):
@@ -1258,22 +1282,50 @@ class ModelConfigUpdatePayloads(BaseModel):
 
     pre_prompt: str = Field(default="", description="预设提示")
     prompt_type: str = Field(default="simple", description="提示类型")
-    chat_prompt_config: Optional[dict] = Field(default_factory=dict, description="对话提示配置")
-    completion_prompt_config: Optional[dict] = Field(default_factory=dict, description="补全提示配置")
-    user_input_form: Optional[List[dict]] = Field(default_factory=list, description="用户输入表单")
-    dataset_query_variable: Optional[str] = Field(default="", description="数据集查询变量")
-    more_like_this: Optional[dict] = Field(default_factory=dict, description="相似推荐配置")
+    chat_prompt_config: Optional[dict] = Field(
+        default_factory=dict, description="对话提示配置"
+    )
+    completion_prompt_config: Optional[dict] = Field(
+        default_factory=dict, description="补全提示配置"
+    )
+    user_input_form: Optional[List[dict]] = Field(
+        default_factory=list, description="用户输入表单"
+    )
+    dataset_query_variable: Optional[str] = Field(
+        default="", description="数据集查询变量"
+    )
+    more_like_this: Optional[dict] = Field(
+        default_factory=dict, description="相似推荐配置"
+    )
     opening_statement: Optional[str] = Field(default="", description="开场白")
-    suggested_questions: Optional[List[str]] = Field(default_factory=list, description="建议问题列表")
-    sensitive_word_avoidance: Optional[dict] = Field(default_factory=dict, description="敏感词规避配置")
-    speech_to_text: Optional[dict] = Field(default_factory=dict, description="语音转文本配置")
-    text_to_speech: Optional[dict] = Field(default_factory=dict, description="文字转语音配置")
-    file_upload: Optional[dict] = Field(default_factory=dict, description="文件上传配置")
-    suggested_questions_after_answer: Optional[dict] = Field(default_factory=dict, description="回答后的建议问题配置")
-    retriever_resource: Optional[dict] = Field(default_factory=dict, description="检索资源配置")
-    agent_mode: Optional[AgentMode] = Field(default=AgentMode(), description="代理模式配置")
+    suggested_questions: Optional[List[str]] = Field(
+        default_factory=list, description="建议问题列表"
+    )
+    sensitive_word_avoidance: Optional[dict] = Field(
+        default_factory=dict, description="敏感词规避配置"
+    )
+    speech_to_text: Optional[dict] = Field(
+        default_factory=dict, description="语音转文本配置"
+    )
+    text_to_speech: Optional[dict] = Field(
+        default_factory=dict, description="文字转语音配置"
+    )
+    file_upload: Optional[FileUploadInModelConfig] = Field(
+        default=FileUploadInModelConfig(), description="文件上传配置"
+    )
+    suggested_questions_after_answer: Optional[dict] = Field(
+        default_factory=dict, description="回答后的建议问题配置"
+    )
+    retriever_resource: Optional[dict] = Field(
+        default_factory=dict, description="检索资源配置"
+    )
+    agent_mode: Optional[AgentMode] = Field(
+        default=AgentMode(), description="代理模式配置"
+    )
     model: ModelInUpdate = Field(default=None, description="模型配置")
-    dataset_configs: Optional[dict] = Field(default_factory=dict, description="数据集配置")
+    dataset_configs: Optional[dict] = Field(
+        default_factory=dict, description="数据集配置"
+    )
 
     # Pydantic V2 配置方式
     model_config = {"populate_by_name": True, "protected_namespaces": ()}
