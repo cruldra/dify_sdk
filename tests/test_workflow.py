@@ -6,6 +6,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from dify.app import DifyApp
 from dify.app.schemas import App, AppMode, ApiKey, RunWorkflowPayloads, ConversationEvent, ConversationEventType
 from dify.app.utils import parse_event
+from dify.app.workflow import DifyWorkflow
+from dify.app.workflow.schemas import WorkflowPublish, WorkflowGraph
 from dify.http import AdminClient, ApiClient
 
 
@@ -179,3 +181,46 @@ async def test_run_workflow_http_error(dify_app, mock_admin_client, mock_api_cli
     with pytest.raises(ValueError, match="运行工作流失败"):
         async for _ in dify_app.run(mock_workflow_app.id, workflow_payloads):
             pass 
+
+
+@pytest.fixture
+def mock_workflow_publish():
+    """创建模拟的工作流发布详情"""
+    return {
+        "id": "workflow-publish-123456",
+        "graph": {
+            "nodes": [],
+            "edges": []
+        }
+    }
+
+@pytest.mark.asyncio
+async def test_get_workflow_publish(mock_admin_client, mock_workflow_publish):
+    """测试获取工作流发布详情"""
+    # 创建 DifyWorkflow 实例
+    workflow = DifyWorkflow(mock_admin_client)
+    
+    # 模拟 get 方法返回工作流发布详情
+    mock_admin_client.get.return_value = mock_workflow_publish
+    
+    # 调用被测试的方法
+    app_id = "app-123456"
+    result = await workflow.get_publish(app_id)
+    
+    # 验证结果
+    assert isinstance(result, WorkflowPublish)
+    assert result.id == mock_workflow_publish["id"]
+    assert isinstance(result.graph, WorkflowGraph)
+    
+    # 验证调用
+    mock_admin_client.get.assert_called_once_with(f"/apps/{app_id}/workflows/publish")
+
+@pytest.mark.asyncio
+async def test_get_workflow_publish_empty_app_id(mock_admin_client):
+    """测试空应用ID的情况"""
+    # 创建 DifyWorkflow 实例
+    workflow = DifyWorkflow(mock_admin_client)
+    
+    # 调用被测试的方法，应该抛出异常
+    with pytest.raises(ValueError, match="应用ID不能为空"):
+        await workflow.get_publish("") 

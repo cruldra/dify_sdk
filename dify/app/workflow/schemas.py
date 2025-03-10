@@ -6,8 +6,8 @@ from pydantic import BaseModel, Field
 class Position(BaseModel):
     """位置"""
 
-    x: Optional[int] = Field(default=None, description="x坐标")
-    y: Optional[int] = Field(default=None, description="y坐标")
+    x: Optional[float] = Field(default=None, description="x坐标")
+    y: Optional[float] = Field(default=None, description="y坐标")
 
 
 class WorkflowNodeData(BaseModel):

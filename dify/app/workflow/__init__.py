@@ -19,6 +19,10 @@ class DifyWorkflow:
             ValueError: 当工作流ID为空时抛出
             httpx.HTTPStatusError: 当API请求失败时抛出
         """
-        pass
+        if not app_id:
+            raise ValueError("应用ID不能为空")
+        
+        response = await self.admin_client.get(f"/apps/{app_id}/workflows/publish")
+        return WorkflowPublish(**response)
 
 __all__ = ["DifyWorkflow"]
