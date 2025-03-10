@@ -49,7 +49,7 @@ class ModelConfig(BaseModel):
         default=None, description="外部数据工具列表"
     )
     model: Optional[dict] = Field(default=None, description="模型配置")
-    user_input_form: Optional[List[dict]] = Field(
+    user_input_form: Optional[List["UserInputItem"]] = Field(
         default=None, description="用户输入表单配置"
     )
     dataset_query_variable: Optional[str] = Field(
@@ -1018,53 +1018,30 @@ class AnnotationReplyConfig(BaseModel):
     enabled: bool = Field(default=False, description="是否开启标记回复功能")
 
 
-class TextInput(BaseModel):
-    """文本输入控件配置
+class BaseInput(BaseModel):
+    """基础输入控件配置
 
     Attributes:
         label: 控件展示标签名
         variable: 控件ID
-        required: 是否必填
-        default: 默认值
     """
 
     label: str = Field(description="控件展示标签名")
     variable: str = Field(description="控件ID")
-    required: bool = Field(default=False, description="是否必填")
-    default: str = Field(default="", description="默认值")
+    type: Optional[str] = Field(default=None, description="控件类型")
+    max_length: Optional[int] = Field(default=None, description="最大长度")
+    required: Optional[bool] = Field(default=None, description="是否必填")
 
 
-class ParagraphInput(BaseModel):
-    """段落文本输入控件配置
-
-    Attributes:
-        label: 控件展示标签名
-        variable: 控件ID
-        required: 是否必填
-        default: 默认值
-    """
-
-    label: str = Field(description="控件展示标签名")
-    variable: str = Field(description="控件ID")
-    required: bool = Field(default=False, description="是否必填")
-    default: str = Field(default="", description="默认值")
+class TextInput(BaseInput):
+    pass
 
 
-class SelectInput(BaseModel):
-    """下拉控件配置
+class ParagraphInput(BaseInput):
+    pass
 
-    Attributes:
-        label: 控件展示标签名
-        variable: 控件ID
-        required: 是否必填
-        default: 默认值
-        options: 选项值列表
-    """
 
-    label: str = Field(description="控件展示标签名")
-    variable: str = Field(description="控件ID")
-    required: bool = Field(default=False, description="是否必填")
-    default: str = Field(default="", description="默认值")
+class SelectInput(BaseInput):
     options: List[str] = Field(default_factory=list, description="选项值列表")
 
 
@@ -1127,9 +1104,9 @@ class UserInputItem(BaseModel):
         select_input: 下拉输入项
     """
 
-    text_input: TextInput = Field(default=None, alias="text-input")
-    paragraph_input: ParagraphInput = Field(default=None, alias="paragraph-input")
-    select_input: SelectInput = Field(default=None, alias="select-input")
+    text_input: Optional[TextInput] = Field(default=None, alias="text-input")
+    paragraph: Optional[ParagraphInput] = Field(default=None, alias="paragraph")
+    select_input: Optional[SelectInput] = Field(default=None, alias="select-input")
 
 
 class AppParameters(BaseModel):

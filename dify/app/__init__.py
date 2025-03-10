@@ -17,12 +17,14 @@ from .schemas import (
 from .utils import parse_event
 from ..http import AdminClient
 from ..schemas import Pagination
+from .workflow import DifyWorkflow
 
 
 class DifyApp:
     def __init__(self, admin_client: AdminClient) -> None:
         self.admin_client = admin_client
         self.conversation = DifyConversation(admin_client)
+        self.workflow = DifyWorkflow(admin_client)
 
     async def find_list(
         self,
@@ -410,7 +412,7 @@ class DifyApp:
 
         # 发送DELETE请求删除应用
         await self.admin_client.delete(f"/apps/{app_id}")
-        
+
         # 根据curl命令返回204状态码，表示删除成功
         return True
 
