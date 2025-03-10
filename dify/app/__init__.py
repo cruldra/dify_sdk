@@ -182,6 +182,9 @@ class DifyApp:
         ):
             full_bytes += chunk
             full_content = full_bytes.decode()
+            if full_content == "event: ping\n\n":
+                full_bytes = b""
+                continue
             # 确保事件块的完整性,以data:开头,以\n\n结尾
             if full_content.startswith("data:") and full_content.endswith("\n\n"):
                 # 一个完整的事件块中可能包含多个事件
@@ -234,6 +237,9 @@ class DifyApp:
         ):
             full_bytes += chunk
             full_content = full_bytes.decode()
+            if full_content == "event: ping\n\n":
+                full_bytes = b""
+                continue
             if full_content.startswith("data:") and full_content.endswith("\n\n"):
                 for line in full_content.split("\n\n"):
                     if line.startswith("data: "):
@@ -283,6 +289,9 @@ class DifyApp:
         ):
             full_bytes += chunk
             full_content = full_bytes.decode()
+            if full_content == "event: ping\n\n":
+                full_bytes = b""
+                continue
             if full_content.startswith("data:") and full_content.endswith("\n\n"):
                 for line in full_content.split("\n\n"):
                     if line.startswith("data: "):
