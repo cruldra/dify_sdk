@@ -42,5 +42,7 @@ def parse_event(data: dict) -> ConversationEvent:
         return NodeFinishedEvent(**data)
     elif event_type == ConversationEventType.WORKFLOW_FINISHED:
         return WorkflowFinishedEvent(**data)
+    elif event_type == ConversationEventType.TEXT_CHUNK:
+        return TextChunkEvent(**data)
     else:
         raise ValueError(f"不支持的事件类型: {event_type}")

@@ -176,16 +176,21 @@ class DifyApp:
         }
 
         # 使用API客户端发送流式请求
+        full_bytes = b""
         async for chunk in api_client.stream(
             f"/chat-messages", headers=headers, json=request_data
         ):
-            # 解析事件数据
-            for line in chunk.decode().split("\n"):
-                if line.startswith("data:"):
-                    event_data = json.loads(line[5:])
-                    # 根据事件类型返回对应的事件对象
-                    event = parse_event(event_data)
-                    yield event
+            full_bytes += chunk
+            full_content = full_bytes.decode()
+            # 确保事件块的完整性,以data:开头,以\n\n结尾
+            if full_content.startswith("data:") and full_content.endswith("\n\n"):
+                # 一个完整的事件块中可能包含多个事件
+                for line in full_content.split("\n\n"):
+                    if line.startswith("data: "):
+                        event_data = json.loads(line[6:])
+                        event = parse_event(event_data)
+                        yield event
+                full_bytes = b""
 
     async def completion(
         self, api_key: ApiKey | str, payloads: RunWorkflowPayloads
@@ -220,19 +225,22 @@ class DifyApp:
         }
 
         # 使用API客户端发送流式请求
+        full_bytes = b""
         async for chunk in api_client.stream(
             "/completion-messages",
             method="POST",
             headers=headers,
             json=request_data,
         ):
-            # 解析事件数据
-            for line in chunk.decode("utf-8").split("\n"):
-                if line.startswith("data:"):
-                    event_data = json.loads(line[5:])
-                    # 根据事件类型返回对应的事件对象
-                    event = parse_event(event_data)
-                    yield event
+            full_bytes += chunk
+            full_content = full_bytes.decode()
+            if full_content.startswith("data:") and full_content.endswith("\n\n"):
+                for line in full_content.split("\n\n"):
+                    if line.startswith("data: "):
+                        event_data = json.loads(line[6:])
+                        event = parse_event(event_data)
+                        yield event
+                full_bytes = b""
 
     async def run(
         self, api_key: ApiKey | str, payloads: RunWorkflowPayloads
@@ -267,18 +275,21 @@ class DifyApp:
         }
 
         # 使用API客户端发送流式请求
+        full_bytes = b""
         async for chunk in api_client.stream(
             "/workflows/run",
             json=request_data,
             headers=headers,
         ):
-            # 解析事件数据
-            for line in chunk.decode().split("\n"):
-                if line.startswith("data:"):
-                    event_data = json.loads(line[5:])
-                    # 根据事件类型返回对应的事件对象
-                    event = parse_event(event_data)
-                    yield event
+            full_bytes += chunk
+            full_content = full_bytes.decode()
+            if full_content.startswith("data:") and full_content.endswith("\n\n"):
+                for line in full_content.split("\n\n"):
+                    if line.startswith("data: "):
+                        event_data = json.loads(line[6:])
+                        event = parse_event(event_data)
+                        yield event
+                full_bytes = b""
 
     async def get_parameters(self, api_key: ApiKey | str) -> AppParameters:
         """获取应用参数配置

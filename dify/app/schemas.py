@@ -269,6 +269,7 @@ class ConversationEventType(str, Enum):
         WORKFLOW_FINISHED: 工作流结束
         NODE_STARTED: 节点开始
         NODE_FINISHED: 节点结束
+        TEXT_CHUNK: 文本片段
     """
 
     MESSAGE = "message"
@@ -285,7 +286,7 @@ class ConversationEventType(str, Enum):
     WORKFLOW_FINISHED = "workflow_finished"
     NODE_STARTED = "node_started"
     NODE_FINISHED = "node_finished"
-
+    TEXT_CHUNK = "text_chunk"
 
 class ChatMessageEvent(BaseModel):
     """聊天消息事件模型
@@ -917,6 +918,52 @@ class WorkflowFinishedEvent(BaseModel):
         "populate_by_name": True,
         "protected_namespaces": (),
     }
+class TextChunkData(BaseModel):
+    """文本片段数据Schema
+
+    Attributes:
+        text: 文本内容
+        from_variable_selector: 变量选择器来源
+    """
+
+    text: Optional[str] = Field(default=None, description="文本内容")
+    from_variable_selector: Optional[List[str]] = Field(
+        default=None, description="变量选择器来源"
+    )
+
+    # Pydantic V2 配置方式
+    model_config = {
+        "populate_by_name": True,
+        "protected_namespaces": (),
+    }
+
+
+class TextChunkEvent(BaseModel):
+    """文本片段事件Schema
+
+    Attributes:
+        event (str): 事件类型，固定为'text_chunk'
+        task_id (str): 任务ID，用于请求跟踪和停止响应接口
+        workflow_run_id (str): workflow执行ID
+        data (TextChunkData): 文本片段数据
+    """
+
+    event: Literal[ConversationEventType.TEXT_CHUNK] = Field(
+        default=ConversationEventType.TEXT_CHUNK, description="事件类型"
+    )
+    task_id: Optional[str] = Field(
+        default=None, description="任务ID，用于请求跟踪和停止响应接口"
+    )
+    workflow_run_id: Optional[str] = Field(default=None, description="workflow执行ID")
+    data: Optional[TextChunkData] = Field(
+        default=None, description="文本片段数据"
+    )
+
+    # Pydantic V2 配置方式
+    model_config = {
+        "populate_by_name": True,
+        "protected_namespaces": (),
+    }
 
 
 # 创建联合类型
@@ -935,6 +982,7 @@ ConversationEvent = Annotated[
         NodeStartedEvent,
         NodeFinishedEvent,
         WorkflowFinishedEvent,
+        TextChunkEvent,
     ],
     Field(discriminator="event"),
 ]
