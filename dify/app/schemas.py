@@ -288,6 +288,7 @@ class ConversationEventType(str, Enum):
     NODE_FINISHED = "node_finished"
     TEXT_CHUNK = "text_chunk"
 
+
 class ChatMessageEvent(BaseModel):
     """聊天消息事件模型
 
@@ -918,6 +919,8 @@ class WorkflowFinishedEvent(BaseModel):
         "populate_by_name": True,
         "protected_namespaces": (),
     }
+
+
 class TextChunkData(BaseModel):
     """文本片段数据Schema
 
@@ -955,9 +958,7 @@ class TextChunkEvent(BaseModel):
         default=None, description="任务ID，用于请求跟踪和停止响应接口"
     )
     workflow_run_id: Optional[str] = Field(default=None, description="workflow执行ID")
-    data: Optional[TextChunkData] = Field(
-        default=None, description="文本片段数据"
-    )
+    data: Optional[TextChunkData] = Field(default=None, description="文本片段数据")
 
     # Pydantic V2 配置方式
     model_config = {
@@ -1085,6 +1086,10 @@ class TextInput(BaseInput):
     pass
 
 
+class NumberInput(BaseInput):
+    pass
+
+
 class ParagraphInput(BaseInput):
     pass
 
@@ -1153,6 +1158,7 @@ class UserInputItem(BaseModel):
     """
 
     text_input: Optional[TextInput] = Field(default=None, alias="text-input")
+    number_input: Optional[NumberInput] = Field(default=None, alias="number")
     paragraph: Optional[ParagraphInput] = Field(default=None, alias="paragraph")
     select_input: Optional[SelectInput] = Field(default=None, alias="select-input")
 
