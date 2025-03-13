@@ -5,6 +5,7 @@ from .conversation import DifyConversation
 from .schemas import (
     ApiKey,
     App,
+    ChatCompletionResponse,
     ChatPayloads,
     ConversationEvent,
     ConversationEventType,
@@ -15,9 +16,9 @@ from .schemas import (
     OperationResult,
 )
 from .utils import parse_event
+from .workflow import DifyWorkflow
 from ..http import AdminClient
 from ..schemas import Pagination
-from .workflow import DifyWorkflow
 
 
 class DifyApp:
@@ -27,12 +28,12 @@ class DifyApp:
         self.workflow = DifyWorkflow(admin_client)
 
     async def find_list(
-        self,
-        page: int = 1,
-        limit: int = 100,
-        mode: AppMode = None,
-        name: str = "",
-        is_created_by_me: bool = False,
+            self,
+            page: int = 1,
+            limit: int = 100,
+            mode: AppMode = None,
+            name: str = "",
+            is_created_by_me: bool = False,
     ):
         """从 Dify 分页获取应用列表
 
@@ -146,8 +147,36 @@ class DifyApp:
         await self.admin_client.delete(f"/apps/{app_id}/api-keys/{key_id}")
         return True
 
+    async def chat_block(
+            self, key: ApiKey | str, payloads: ChatPayloads
+    ) -> ChatCompletionResponse:
+        """和应用进行对话,适用`App.mode`为`chat`的应用.
+
+        Args:
+            key: 应用密钥
+            payloads: 聊天请求配置
+
+        Returns:
+            AsyncGenerator[ConversationEvent, None]: 异步生成器，返回事件数据
+
+        Raises:
+            ValueError: 当请求参数无效时抛出
+            httpx.HTTPStatusError: 当API请求失败时抛出
+        """
+        if not key:
+            raise ValueError("应用密钥不能为空")
+        api_client = self.admin_client.create_api_client(
+            key.token if isinstance(key, ApiKey) else key
+        )
+        # 准备请求数据
+        request_data = payloads.model_dump(exclude_none=True)
+
+        return ChatCompletionResponse(**await api_client.post(
+            f"/chat-messages", json=request_data, timeout=60
+        ))
+
     async def chat(
-        self, key: ApiKey | str, payloads: ChatPayloads
+            self, key: ApiKey | str, payloads: ChatPayloads
     ) -> AsyncGenerator[ConversationEvent, None]:
         """和应用进行对话,适用`App.mode`为`chat`的应用.
 
@@ -178,7 +207,7 @@ class DifyApp:
         # 使用API客户端发送流式请求
         full_bytes = b""
         async for chunk in api_client.stream(
-            f"/chat-messages", headers=headers, json=request_data
+                f"/chat-messages", headers=headers, json=request_data
         ):
             full_bytes += chunk
             full_content = full_bytes.decode()
@@ -196,7 +225,7 @@ class DifyApp:
                 full_bytes = b""
 
     async def completion(
-        self, api_key: ApiKey | str, payloads: RunWorkflowPayloads
+            self, api_key: ApiKey | str, payloads: RunWorkflowPayloads
     ) -> AsyncGenerator[ConversationEvent, None]:
         """使用应用进行补全,适用`App.mode`为`completion`的应用.
 
@@ -230,10 +259,10 @@ class DifyApp:
         # 使用API客户端发送流式请求
         full_bytes = b""
         async for chunk in api_client.stream(
-            "/completion-messages",
-            method="POST",
-            headers=headers,
-            json=request_data,
+                "/completion-messages",
+                method="POST",
+                headers=headers,
+                json=request_data,
         ):
             full_bytes += chunk
             full_content = full_bytes.decode()
@@ -249,7 +278,7 @@ class DifyApp:
                 full_bytes = b""
 
     async def run(
-        self, api_key: ApiKey | str, payloads: RunWorkflowPayloads
+            self, api_key: ApiKey | str, payloads: RunWorkflowPayloads
     ) -> AsyncGenerator[ConversationEvent, None]:
         """使用应用运行工作流,适用`App.mode`为`workflow`的应用.
 
@@ -283,9 +312,9 @@ class DifyApp:
         # 使用API客户端发送流式请求
         full_bytes = b""
         async for chunk in api_client.stream(
-            "/workflows/run",
-            json=request_data,
-            headers=headers,
+                "/workflows/run",
+                json=request_data,
+                headers=headers,
         ):
             full_bytes += chunk
             full_content = full_bytes.decode()
@@ -323,7 +352,7 @@ class DifyApp:
         return AppParameters.model_validate(response)
 
     async def stop_message(
-        self, api_key: ApiKey | str, task_id: str, user_id: str
+            self, api_key: ApiKey | str, task_id: str, user_id: str
     ) -> OperationResult:
         """停止消息生成
 
@@ -342,7 +371,7 @@ class DifyApp:
         return await self.conversation.stop_message(api_key, task_id, user_id)
 
     async def update_model_config(
-        self, app_id: str, model_config: ModelConfigUpdatePayloads
+            self, app_id: str, model_config: ModelConfigUpdatePayloads
     ) -> OperationResult:
         """更新应用的模型配置
 
@@ -370,13 +399,13 @@ class DifyApp:
         return OperationResult(**response_data)
 
     async def create(
-        self,
-        name: str,
-        mode: AppMode | str,
-        description: str = "",
-        icon_type: str = "emoji",
-        icon: str = "🤖",
-        icon_background: str = "#FFEAD5",
+            self,
+            name: str,
+            mode: AppMode | str,
+            description: str = "",
+            icon_type: str = "emoji",
+            icon: str = "🤖",
+            icon_background: str = "#FFEAD5",
     ) -> App:
         """创建新应用
 

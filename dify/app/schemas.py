@@ -126,6 +126,14 @@ class App(BaseModel):
     }
 
 
+class ChatCompletionResponse(BaseModel):
+    """聊天完成响应"""
+
+    message_id: str = Field(..., description="消息ID")
+    conversation_id: str = Field(..., description="会话ID")
+    answer: str = Field(..., description="回答")
+
+
 class TransferMethod(str, Enum):
     """图片上传方式
 

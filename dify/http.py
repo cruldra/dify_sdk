@@ -37,13 +37,15 @@ class HttpClient:
             return response.json()
 
     async def post(
-            self, url: str, json: dict = None, params: dict = None, headers: dict = None
+            self, url: str, json: dict = None, params: dict = None, headers: dict = None,
+            timeout: int = 10
     ) -> dict[str, Any]:
         async with httpx.AsyncClient() as client:
             merged_headers = await self.__merge_headers__(headers)
 
             response = await client.post(
-                self.base_url + url, json=json, params=params, headers=merged_headers
+                self.base_url + url, json=json, params=params, headers=merged_headers,
+                timeout=timeout
             )
             if response.is_error:
                 raise DifyException(
@@ -75,9 +77,9 @@ class HttpClient:
                 auth_headers.update(headers)
 
             response = await client.post(
-                self.base_url + url, 
-                files=files, 
-                params=params, 
+                self.base_url + url,
+                files=files,
+                params=params,
                 headers=auth_headers
             )
             if response.is_error:
