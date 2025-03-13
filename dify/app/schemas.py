@@ -227,6 +227,10 @@ class ChatPayloads(BaseModel):
         default_factory=list, description="上传的文件列表"
     )
     auto_generate_name: Optional[bool] = Field(default=True, description="自动生成标题")
+    parent_message_id: Optional[str] = Field(default=None, description="父消息ID")
+    app_config: Optional[ModelConfig] = Field(
+        default_factory=ModelConfig, alias="model_config", description="模型配置"
+    )
     # Pydantic V2 配置方式
     model_config = {
         "populate_by_name": True,
