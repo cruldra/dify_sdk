@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field, computed_field
 from ..schemas import RetrieverResource
@@ -80,7 +80,7 @@ class MessageListQueryPayloads(BaseModel):
 
 class MessageFile(BaseModel):
     """消息文件
-    
+
     Attributes:
         id (Optional[str]): 文件ID
         type (Optional[str]): 文件类型
@@ -91,10 +91,13 @@ class MessageFile(BaseModel):
         size (Optional[int]): 文件大小
         transfer_method (Optional[str]): 传输方式
     """
+
     id: Optional[str] = Field(default=None, description="文件ID")
     type: Optional[str] = Field(default=None, description="文件类型")
     url: Optional[str] = Field(default=None, description="预览地址")
-    belongs_to: Optional[str] = Field(default=None, description="文件归属方")
+    belongs_to: Literal["user", "assistant", None] = Field(
+        default=None, description="文件归属方，可选值：user, assistant"
+    )
     filename: Optional[str] = Field(default=None, description="文件名")
     mime_type: Optional[str] = Field(default=None, description="MIME类型")
     size: Optional[int] = Field(default=None, description="文件大小")
@@ -103,7 +106,7 @@ class MessageFile(BaseModel):
 
 class AgentThought(BaseModel):
     """Agent思考
-    
+
     Attributes:
         id (Optional[str]): 思考ID
         message_id (Optional[str]): 消息ID
@@ -114,6 +117,7 @@ class AgentThought(BaseModel):
         tool_input (Optional[str]): 工具输入参数
         message_files (Optional[List[MessageFile]]): 关联文件ID
     """
+
     id: Optional[str] = Field(default=None, description="思考ID")
     message_id: Optional[str] = Field(default=None, description="消息ID")
     position: Optional[int] = Field(default=None, description="思考位置")
@@ -132,7 +136,7 @@ class Feedback(BaseModel):
 
 class Message(BaseModel):
     """消息
-    
+
     Attributes:
         id (Optional[str]): 消息ID
         conversation_id (Optional[str]): 会话ID
@@ -145,6 +149,7 @@ class Message(BaseModel):
         feedback (Optional[Feedback]): 用户反馈
         retriever_resources (Optional[List[RetrieverResource]]): 检索资源
     """
+
     id: Optional[str] = Field(default=None, description="消息ID")
     conversation_id: Optional[str] = Field(default=None, description="会话ID")
     inputs: Optional[dict] = Field(default_factory=dict, description="输入参数")
@@ -171,6 +176,8 @@ class Message(BaseModel):
         return date.strftime("%Y-%m-%d %H:%M:%S") if date else None
 
     model_config = {"arbitrary_types_allowed": True, "protected_namespaces": ()}
+
+
 class MessageList(BaseModel):
     """消息列表
 
@@ -179,9 +186,8 @@ class MessageList(BaseModel):
         has_more (bool): 是否有更多数据
         limit (int): 实际返回数量
     """
-    data: Optional[List[Message]] = Field(
-        default_factory=list, description="消息列表"
-    )
+
+    data: Optional[List[Message]] = Field(default_factory=list, description="消息列表")
     has_more: Optional[bool] = Field(default=False, description="是否有更多数据")
     limit: Optional[int] = Field(default=20, description="实际返回数量")
 
