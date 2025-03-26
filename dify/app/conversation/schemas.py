@@ -3,6 +3,7 @@ from enum import Enum
 from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field, computed_field
+
 from ..schemas import RetrieverResource
 
 

@@ -1,6 +1,4 @@
 import os
-from typing import Optional
-from pathlib import Path
 
 from dify.http import AdminClient
 from .schemas import UploadFile

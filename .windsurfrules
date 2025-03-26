@@ -1,28 +1,62 @@
+---
+description: Python 库项目开发最佳实践与规范
+---
+
+# Python 库项目开发规范
+
+## 依赖管理
+
+- 使用`uv`管理依赖
+
 ## 项目结构
 
-```markdown
-my_library_project/
-├── app/                      # 主应用目录
-│   ├── module1/                 # 模块1
-│   │   ├── __init__.py
-│   │   ├── schema.py         # 模型
-│   │   ├── utils.py          # 工具函数
-├── tests/                     # 测试目录
-│   ├── test_module1.py
-│   └── __init__.py
-├── docs/                      # 文档目录
-│   ├── __init__.py
-│   └── index.md              # 主页
-└── examples/                  # 示例目录
+- 项目整体结构如下:
+
+    ```markdown
+    $PROJECT_ROOT/
+    ├── lib_name/                      # 主应用目录
+    │   ├── module1/                 # 模块1
+    │   │   ├── __init__.py
+    │   │   ├── schemas.py         # 模型
+    │   │   ├── utils.py          # 工具函数
+    ├── tests/                     # 测试目录
+    │   ├── test_module1.py
+    │   └── __init__.py
+    ├── docs/                      # 文档目录
+    │   ├── __init__.py
+    │   └── index.md              # 主页
+    └── examples/                  # 示例目录
+        ├── __init__.py
+        └── example1.py           # 示例1
+    ```
+- 采用模块化设计,每个模块位于`$PROJECT_ROOT/lib_name`目录下,其结构如下:
+
+    ```markdown
+    module_name
+    ├── sub_module1   # 子模块1
+    │   ├── __init__.py
+    │   ├── schemas.py  # Pydantic模型
+    │   └── utils.py    # 工具函数
+    ├── sub_module2   # 子模块2
+    │   ├── __init__.py
+    │   ├── schemas.py  # Pydantic模型
+    │   └── utils.py    # 工具函数
     ├── __init__.py
-    └── example1.py           # 示例1
-```
+    └── schemas.py      # 模块公共模型
+    ```
 
-## 另请遵守
+## 示例
 
-1. 健壮的错误处理和日志记录，包括上下文捕获。
-2. 使用pytest进行全面测试。
-3. 使用文档字符串和README文件进行详细文档编写。
-4. 使用uv来安装依赖。
-5. 使用Ruff保持代码风格一致性。
-6. 涉及结构性变更，在README中说明。
+- 在完成一个功能时,询问是否需要添加示例代码
+- 示例代码应位于`$PROJECT_ROOT/examples`目录下,结构如下:
+
+    ```markdown
+    examples
+    ├── module_name   # 模块名
+    │   ├── __init__.py
+    │   ├── feature_name_example.py   # 功能名示例
+    │   └── ...
+    └── ...
+    ```
+- 示例和测试不是一个东西，示例代码不要用`test_`开头
+- 运行示例代码时,需要先设置`PYTHONPATH`环境变量到`$PROJECT_ROOT`目录,然后使用`uv run examples/module_name/feature_name_example.py`运行

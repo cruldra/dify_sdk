@@ -1,5 +1,4 @@
 from dify.http import AdminClient
-from ..schemas import ApiKey, OperationResult
 from .schemas import (
     Conversation,
     ConversationListQueryPayloads,
@@ -9,6 +8,7 @@ from .schemas import (
     MessageList,
     MessageFeedbackPayloads,
 )
+from ..schemas import ApiKey, OperationResult
 
 
 class DifyConversation:

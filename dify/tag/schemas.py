@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field
+from enum import Enum
 from typing import List, Optional
 
-from enum import Enum
+from pydantic import BaseModel, Field
+
 
 class TagType(str, Enum):
     """标签类型枚举"""

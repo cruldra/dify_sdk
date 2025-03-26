@@ -1,6 +1,7 @@
+from typing import List
+
 from dify.http import AdminClient
 from .schemas import Tag, TagType, BindingPayloads
-from typing import List
 
 
 class DifyTag:

@@ -5,10 +5,10 @@ Dify SDK - Dify AI 平台的 Python SDK
 """
 
 from .app import DifyApp
+from .dataset import DifyDataset
+from .file import DifyFile
 from .http import AdminClient, ApiClient
 from .llm import DifyLLM
-from .file import DifyFile
-from .dataset import DifyDataset
 from .tag import DifyTag
 
 

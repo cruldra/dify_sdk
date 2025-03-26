@@ -9,7 +9,7 @@ from .schemas import (
     ChatPayloads,
     ConversationEvent,
     ConversationEventType,
-    ModelConfigUpdatePayloads,
+    ModelConfig,
     RunWorkflowPayloads,
     AppMode,
     AppParameters,
@@ -371,7 +371,7 @@ class DifyApp:
         return await self.conversation.stop_message(api_key, task_id, user_id)
 
     async def update_model_config(
-            self, app_id: str, model_config: ModelConfigUpdatePayloads
+            self, app_id: str, model_config: ModelConfig
     ) -> OperationResult:
         """更新应用的模型配置
 

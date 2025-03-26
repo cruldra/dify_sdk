@@ -1,4 +1,5 @@
 from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -51,12 +52,6 @@ class Model(BaseModel):
     status: str = Field(description="模型状态")
     load_balancing_enabled: bool = Field(default=False, description="是否启用负载均衡")
 
-    # Pydantic V2 配置
-    model_config = {
-        "populate_by_name": True,
-        "protected_namespaces": (),
-    }
-
 
 class LLM(BaseModel):
     """LLM模型提供者Schema
@@ -77,11 +72,6 @@ class LLM(BaseModel):
     icon_large: MultiLanguage = Field(description="大图标，包含中英文")
     status: str = Field(description="模型状态")
     models: list[Model] = Field(description="模型列表")
-    # Pydantic V2 配置
-    model_config = {
-        "populate_by_name": True,
-        "protected_namespaces": (),
-    }
 
 
 class LLMList(BaseModel):
